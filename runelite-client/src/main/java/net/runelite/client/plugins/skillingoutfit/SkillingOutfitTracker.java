@@ -6,6 +6,7 @@ import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.InventoryID;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 
@@ -24,6 +25,7 @@ public class SkillingOutfitTracker
     private int temporossPoints = 0;
     private int hunterRumors = 0;
     private int wintertodtCrates = 0;
+    private int animaBark;
 
     private final Map<Integer, Boolean> ownedCache = new HashMap<>();
     private final Set<Integer> obtainedItems = new HashSet<>();
@@ -51,15 +53,14 @@ public class SkillingOutfitTracker
         this.configManager = configManager;
 
         loadObtainedItems();
+        loadBankCache();
     }
 
     // ======== UPDATE ALL CACHES ========
-    public void updateAllCaches()
-    {
+    public void updateAllCaches() {
         updateInventoryCache();
         updateEquipmentCache();
         updateBankCache();
-
     }
 
     public void updateInventoryCache()
@@ -110,13 +111,56 @@ public class SkillingOutfitTracker
             Map<Integer, Integer> newBankSnapshot = new HashMap<>();
             for (Item item : bank.getItems())
                 newBankSnapshot.put(item.getId(), item.getQuantity());
+
             bankCacheSnapshot = newBankSnapshot;
+
+            // Save to config immediately
+            saveBankCache();
         }
     }
 
+    public void saveBankCache()
+    {
+        if (bankCacheSnapshot.isEmpty())
+            return;
 
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Integer, Integer> entry : bankCacheSnapshot.entrySet())
+        {
+            sb.append(entry.getKey()).append(":").append(entry.getValue()).append(",");
+        }
+        if (sb.length() > 0)
+            sb.setLength(sb.length() - 1); // remove trailing comma
 
+        configManager.setConfiguration(configGroup, "bankCache", sb.toString());
 
+        System.out.println("[SOT] Saved bank cache: " + sb.toString());
+    }
+
+    public void loadBankCache()
+    {
+        String saved = configManager.getConfiguration(configGroup, "bankCache");
+        if (saved == null || saved.isEmpty())
+            return;
+
+        Map<Integer, Integer> loaded = new HashMap<>();
+        for (String pair : saved.split(","))
+        {
+            String[] parts = pair.split(":");
+            if (parts.length != 2)
+                continue;
+            try
+            {
+                int itemId = Integer.parseInt(parts[0]);
+                int qty = Integer.parseInt(parts[1]);
+                loaded.put(itemId, qty);
+            }
+            catch (NumberFormatException ignored) {}
+        }
+
+        bankCacheSnapshot = loaded;
+        System.out.println("[SOT] Loaded bank cache: " + loaded);
+    }
 
     // ======== TOTAL COST ITEMS COMBINED ========
     public int getTotalCostItem(int costId)
@@ -156,7 +200,7 @@ public class SkillingOutfitTracker
     {
         if (obtainedItems.add(itemId))  // only save if it’s new
         {
-            System.out.println("[SOT] [addObtainedItem] Adding new obtained item: " + itemId);
+            //PRINTOUT System.out.println("[SOT] [addObtainedItem] Adding new obtained item: " + itemId);
             saveObtainedItems();
 
             // Update caches and refresh panel
@@ -165,10 +209,10 @@ public class SkillingOutfitTracker
                 SwingUtilities.invokeLater(panel::updateAllCaches);
             }
         }
-        else
-        {
-            System.out.println("[SOT] [addObtainedItem] Item already obtained: " + itemId);
-        }
+        //PRINTOUT else
+        //PRINTOUT  {
+            //PRINTOUT System.out.println("[SOT] [addObtainedItem] Item already obtained: " + itemId);
+        //PRINTOUT }
     }
 
 
@@ -182,7 +226,7 @@ public class SkillingOutfitTracker
             sb.setLength(sb.length() - 1);
 
         configManager.setConfiguration(configGroup, "obtainedItems", sb.toString());
-        System.out.println("[SOT] [saveObtainedItems] Saved obtained items to config: " + sb.toString());
+        //PRINTOUT   System.out.println("[SOT] [saveObtainedItems] Saved obtained items to config: " + sb.toString());
     }
 
     public void loadObtainedItems()
@@ -196,33 +240,50 @@ public class SkillingOutfitTracker
                 {
                     int itemId = Integer.parseInt(s);
                     obtainedItems.add(itemId);
-                    System.out.println("[SOT] [loadObtainedItems] Loaded obtained item from config: " + itemId);
+                    //PRINTOUT  System.out.println("[SOT] [loadObtainedItems] Loaded obtained item from config: " + itemId);
                 }
                 catch (NumberFormatException ignored) {}
             }
         }
-        else
-        {
-            System.out.println("[SOT] [loadObtainedItems} No obtained items found in config");
-        }
+        //PRINTOUT else
+        //PRINTOUT{
+            //PRINTOUT     System.out.println("[SOT] [loadObtainedItems] No obtained items found in config");
+            //PRINTOUT }
     }
 
     public void updateOwnedItemsFromCaches()
     {
-        System.out.println("[SOT] [updateOwnedItemsFromCaches] updateOwnedItemsFromCaches() called");
-
         Set<Integer> allItems = new HashSet<>();
         allItems.addAll(getInventoryCacheSnapshot().keySet());
         allItems.addAll(getEquipmentCacheSnapshot().keySet());
         allItems.addAll(getBankCacheSnapshot().keySet());
 
-        System.out.println("[SOT] [updateOwnedItemsFromCaches] Items found in caches: " + allItems);
+        boolean anyNew = false;
 
         for (int itemId : allItems)
         {
-            addObtainedItem(itemId); // this also saves to config
+            if (obtainedItems.add(itemId)) // only new items
+            {
+                ownedCache.put(itemId, true);
+                anyNew = true;
+            }
+        }
+
+        if (anyNew)
+        {
+            saveObtainedItems();   // only save once if there were new items
+        }
+
+        // Update cost totals so buildPointsLine shows correct x/x
+        refreshCostItemCache();
+
+        // Optionally refresh panel UI
+        if (panel != null)
+        {
+            SwingUtilities.invokeLater(() -> panel.updateAllCaches());
         }
     }
+
 
     public void markObtainedFromConfig()
     {
@@ -236,7 +297,7 @@ public class SkillingOutfitTracker
         }
 
         // Debug: print all obtained items marked from config
-        System.out.println("[SOT] [markObtainedFromConfig] Marking obtained items from config: " + obtainedItems);
+        //PRINTOUT System.out.println("[SOT] [markObtainedFromConfig] Marking obtained items from config: " + obtainedItems);
     }
 
 
@@ -261,6 +322,24 @@ public class SkillingOutfitTracker
         }
     }
 
+    public void refreshCostItemCache()
+    {
+        costItemCache.clear();
 
+        for (SkillingOutfitData.SkillingOutfitDataEntry outfitEntry : SkillingOutfitData.OUTFITS_DATA.values())
+        {
+            for (SkillingOutfitItem item : outfitEntry.items.values())
+            {
+                int costId = item.getCostItemId();
+                int total = getTotalCostItem(costId); // inventory+equipment+bank
+                costItemCache.put(costId, total);
+
+                // Debug print
+                System.out.println("[SOT] [refreshCostItemCache] Loading cost item: ID=" + costId
+                        + ", Name=" + item.getCostText()
+                        + ", Total Owned=" + total);
+            }
+        }
+    }
 
 }

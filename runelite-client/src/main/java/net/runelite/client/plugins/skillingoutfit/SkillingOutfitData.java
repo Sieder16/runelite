@@ -27,7 +27,7 @@ public class SkillingOutfitData
         carpenter.put(24876, new SkillingOutfitItem(24876, "Carpenter Trousers", 600, "Carpenter Points", 0));
         carpenter.put(24878, new SkillingOutfitItem(24878, "Carpenter Boots", 200, "Carpenter Points", 0));
         OUTFITS_DATA.put("Construction - Carpenter Outfit",
-                new SkillingOutfitDataEntry("displayConstruction", carpenter, "https://oldschool.runescape.wiki/w/Carpenter%27s_outfit", "Construction"));
+                new SkillingOutfitDataEntry("displayConstruction", carpenter, "https://oldschool.runescape.wiki/w/Carpenter's_outfit", "Construction"));
 
         // Farmer's Outfit A MALE
         Map<Integer, SkillingOutfitItem> farmera = new LinkedHashMap<>();
@@ -36,7 +36,7 @@ public class SkillingOutfitData
         farmera.put(13640, new SkillingOutfitItem(13640, "Farmer's Boro Trousers", 125, "Farming Points", 0));
         farmera.put(13644, new SkillingOutfitItem(13644, "Farmer's Boots", 50, "Farming Points", 0));
         OUTFITS_DATA.put("Farming - Farmer's Outfit Male",
-                new SkillingOutfitDataEntry("displayFarming", farmera, "https://oldschool.runescape.wiki/w/Farmer%27s_outfit#Body_Type_A", "Farming"));
+                new SkillingOutfitDataEntry("displayFarming", farmera, "https://oldschool.runescape.wiki/w/Farmer's_outfit#Body_Type_A", "Farming"));
 
         // Farmer's Outfit B FEMALE
         Map<Integer, SkillingOutfitItem> farmerb = new LinkedHashMap<>();
@@ -45,7 +45,7 @@ public class SkillingOutfitData
         farmerb.put(13641, new SkillingOutfitItem(13641, "Farmer's Boro Trousers", 125, "Farming Points", 0));
         farmerb.put(13645, new SkillingOutfitItem(13645, "Farmer's Boots", 50, "Farming Points", 0));
         OUTFITS_DATA.put("Farming - Farmer's Outfit Female",
-                new SkillingOutfitDataEntry("displayFarming", farmerb, "https://oldschool.runescape.wiki/w/Farmer%27s_outfit#Body_Type_B", "Farming"));
+                new SkillingOutfitDataEntry("displayFarming", farmerb, "https://oldschool.runescape.wiki/w/Farmer's_outfit#Body_Type_B", "Farming"));
 
         // Pyromancer Outfit
         Map<Integer, SkillingOutfitItem> pyromancer = new LinkedHashMap<>();
@@ -63,7 +63,7 @@ public class SkillingOutfitData
         angler.put(13260, new SkillingOutfitItem(13260, "Angler Waders", 0, "Fishing Trawler - Reward Net", 0));
         angler.put(13261, new SkillingOutfitItem(13261, "Angler Boots", 0, "Fishing Trawler - Reward Net", 0));
         OUTFITS_DATA.put("Fishing - Angler's Outfit",
-                new SkillingOutfitDataEntry("displayFishing", angler, "https://oldschool.runescape.wiki/w/Angler%27s_outfit", "Fishing"));
+                new SkillingOutfitDataEntry("displayFishing", angler, "https://oldschool.runescape.wiki/w/Angler's_outfit", "Fishing"));
 
         // Guild Hunter Outfit
         Map<Integer, SkillingOutfitItem> hunter = new LinkedHashMap<>();
@@ -79,7 +79,7 @@ public class SkillingOutfitData
         prospector.put(12013, new SkillingOutfitItem(12013, "Prospector Helmet", 40, "Gold Nuggets", 12012));
         prospector.put(12014, new SkillingOutfitItem(12014, "Prospector Jacket", 60, "Gold Nuggets", 12012));
         prospector.put(12015, new SkillingOutfitItem(12015, "Prospector Legs", 50, "Gold Nuggets", 12012));
-        prospector.put(12010, new SkillingOutfitItem(12010, "Prospector Boots", 30, "Gold Nuggets", 12012));
+        prospector.put(12010, new SkillingOutfitItem(12010, "Prospector Boots", 30, "Gold Nuggets", 12012)); // CHANGE ID BACK TO 12016, SET AS 12010 FOR TESTING AS I HAVE FULL SET
         OUTFITS_DATA.put("Mining - Prospector Kit",
                 new SkillingOutfitDataEntry("displayMining", prospector, "https://oldschool.runescape.wiki/w/Prospector_kit", "Mining"));
 
@@ -90,7 +90,7 @@ public class SkillingOutfitData
         prayer.put(25436, new SkillingOutfitItem(25436, "Zealot's Robe Bottom", 0, "Shade Catacombs - Gold Chest", 0));
         prayer.put(25440, new SkillingOutfitItem(25440, "Zealot's  Boots", 0, "Shade Catacombs - Gold Chest", 0));
         OUTFITS_DATA.put("Prayer - Zealot's Robes",
-                new SkillingOutfitDataEntry("displayPrayer", prayer, "https://oldschool.runescape.wiki/w/Zealot%27s_robes", "Prayer"));
+                new SkillingOutfitDataEntry("displayPrayer", prayer, "https://oldschool.runescape.wiki/w/Zealot's_robes", "Prayer"));
 
         // Runecraft Robes
         Map<Integer, SkillingOutfitItem> runecraft = new LinkedHashMap<>();
@@ -108,7 +108,7 @@ public class SkillingOutfitData
         smithing.put(27029, new SkillingOutfitItem(27029, "Smiths Gloves", 3500, "Foundry Reputation", 0));
         smithing.put(27027, new SkillingOutfitItem(27027, "Smiths Boots", 3500, "Foundry Reputation", 0));
         OUTFITS_DATA.put("Smithing - Smith's Uniform",
-                new SkillingOutfitDataEntry("displaySmithing", smithing, "https://oldschool.runescape.wiki/w/Smiths%27_Uniform", "Smithing"));
+                new SkillingOutfitDataEntry("displaySmithing", smithing, "https://oldschool.runescape.wiki/w/Smiths'_Uniform", "Smithing"));
 
         // Rogue Equipment
         Map<Integer, SkillingOutfitItem> Thieving = new LinkedHashMap<>();

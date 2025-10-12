@@ -1,11 +1,13 @@
 package net.runelite.client.plugins.skillingoutfit;
 
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Player;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.api.ChatMessageType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -99,16 +102,27 @@ public class SkillingOutfitPanel extends PluginPanel
             }
         });
 
-        innerPanel.addMouseListener(new MouseAdapter() {
+        innerPanel.addMouseListener(new MouseAdapter()
+        {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(MouseEvent e)
+            {
                 int itemId = getItemAt(e.getX(), e.getY());
-                if (itemId != -1) {
-                    try {
-                        Desktop.getDesktop().browse(new URI(
-                                "https://oldschool.runescape.wiki/Special:Lookup?utm_source=wiki&type=item&id=" + itemId
-                        ));
-                    } catch (Exception ex) { ex.printStackTrace(); }
+                if (itemId != -1)
+                {
+                    // Open item wiki
+                    openWikiLink("https://oldschool.runescape.wiki/Special:Lookup?utm_source=wiki&type=item&id=" + itemId);
+                    return;
+                }
+
+                String outfitName = getOutfitAt(e.getX(), e.getY());
+                if (outfitName != null)
+                {
+                    SkillingOutfitData.SkillingOutfitDataEntry entry = SkillingOutfitData.OUTFITS_DATA.get(outfitName);
+                    if (entry != null && entry.wikiUrl != null && !entry.wikiUrl.isEmpty())
+                    {
+                        openWikiLink(entry.wikiUrl);
+                    }
                 }
             }
         });
@@ -118,6 +132,7 @@ public class SkillingOutfitPanel extends PluginPanel
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
+
     }
 
     private void preloadSprites()
@@ -143,8 +158,8 @@ public class SkillingOutfitPanel extends PluginPanel
     private void paintItems(Graphics2D g)
     {
         // Debug print to verify how many obtained items we have when painting
-        System.out.println("[SOT] [paintItems] Drawing panel — obtained items: "
-                + (tracker != null ? tracker.getObtainedItems().size() : "tracker null"));
+        //PRINTOUT System.out.println("[SOT] [paintItems] Drawing panel — obtained items: "
+        //PRINTOUT       + (tracker != null ? tracker.getObtainedItems().size() : "tracker null"));
 
         int panelWidth = getWidth();
         int yOffset = config.panelTitleSpacer();
@@ -310,11 +325,11 @@ public class SkillingOutfitPanel extends PluginPanel
         switch (entry.primarySkill)
         {
             case "Construction":
-                return tracker.getCarpenterPoints() + "/" + totalRequired + " Carpenter Points Needed";
+                return tracker.getCarpenterPoints() + "/" + totalRequired + " Carpenter Points Owned";
             case "Farming":
-                return tracker.getFarmingPoints() + "/" + totalRequired + " Farming Points Needed";
+                return tracker.getFarmingPoints() + "/" + totalRequired + " Farming Points Owned";
             case "Smithing":
-                return tracker.getFoundryPoints() + "/" + totalRequired + " Foundry Reputation Needed";
+                return tracker.getFoundryPoints() + "/" + totalRequired + " Foundry Reputation Owned";
             case "Firemaking":
                 return tracker.getWintertodtCrates() + " Crates Opened";
             case "Fishing":
@@ -322,9 +337,11 @@ public class SkillingOutfitPanel extends PluginPanel
             case "Hunter":
                 return tracker.getHunterRumors() + " Hunter Rumors Completed";
             case "Agility":
-                return totalAvailable + "/" + totalRequired + " " + costText + " Needed";
+                return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
+            case "Woodcutting":
+                return tracker.getAnimaBark() + "/" + totalRequired +  " " + costText + " Owned";
             default:
-                return totalAvailable + "/" + totalRequired + " " + costText + " Needed";
+                return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
         }
     }
 
@@ -466,7 +483,7 @@ public class SkillingOutfitPanel extends PluginPanel
 
         List<String> lines = new ArrayList<>();
         lines.add("Owned: " + owned + "/" + total + " Items");
-        if (totalRequired > 0) lines.add(costAvailable + "/" + totalRequired + " " + costText + " Needed");
+        if (totalRequired > 0) lines.add(costAvailable + "/" + totalRequired + " " + costText + " Owned");
         lines.add("Click To Open Wiki");
 
         drawTooltip(g, outfitRect, lines);
@@ -490,4 +507,27 @@ public class SkillingOutfitPanel extends PluginPanel
         for (int i = 0; i < lines.size(); i++)
             g.drawString(lines.get(i), x + (overlayWidth - fm.stringWidth(lines.get(i))) / 2, y + padding + i * fm.getHeight() + fm.getAscent());
     }
+
+    private void openWikiLink(String url)
+    {
+        try
+        {
+            url = url.replace(" ", "_");
+            Desktop.getDesktop().browse(URI.create(url));
+        }
+        catch (Exception e)
+        {
+            try
+            {
+                // Fallback: Encode manually
+                String encoded = java.net.URLEncoder.encode(url, StandardCharsets.UTF_8);
+                Desktop.getDesktop().browse(URI.create(encoded));
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+    }
+
 }

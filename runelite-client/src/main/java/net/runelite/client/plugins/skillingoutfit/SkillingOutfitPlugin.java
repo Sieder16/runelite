@@ -3,13 +3,12 @@ package net.runelite.client.plugins.skillingoutfit;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.*;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
@@ -78,6 +77,10 @@ public class SkillingOutfitPlugin extends Plugin
     private static final Pattern WINTERTODT_PATTERN = Pattern.compile(
             "You have received <col=[0-9a-f]+>(\\d+)</col> Wintertodt supply crates\\."
     );
+    // Anima-Infused Bark
+    private static final Pattern ANIMA_BARK_PATTERN = Pattern.compile(
+            "You've been awarded <col=[0-9a-fA-F]+>(\\d+)</col> Anima-infused bark\\."
+    );
 
     // ===== Startup =====
     @Override
@@ -104,27 +107,22 @@ public class SkillingOutfitPlugin extends Plugin
             // 1️⃣ Load previously obtained items
             tracker.loadObtainedItems();
 
-            // 2️⃣ Update caches
+            // 2️⃣ Load saved bank cache from config
+            tracker.loadBankCache();
+
+            // 3️⃣ Update inventory and equipment caches
             tracker.updateInventoryCache();
             tracker.updateEquipmentCache();
+
+            // 4️⃣ Update bank cache from live bank if open
             tracker.updateBankCache();
 
-            // 3️⃣ Delay until next tick to ensure bank is loaded
+            // 5️⃣ Merge caches into obtained items
             clientThread.invokeLater(() -> {
-                // Merge caches into obtained items
-                tracker.updateOwnedItemsFromCaches();
-
-                // Update ownedCache for UI
-                tracker.updateOwnedItems();
-
-                // Save back to config
-                tracker.saveObtainedItems();
-
-                // Refresh panel
+                tracker.updateOwnedItemsFromCaches();  // includes bankCacheSnapshot
+                tracker.updateOwnedItems();            // refresh UI cache
+                tracker.saveObtainedItems();           // persist changes
                 safeUpdatePanel(panel::updateAllCaches);
-
-                // Debug
-                System.out.println("[SOT] [startUp] Obtained items on login: " + tracker.getObtainedItems());
             });
         });
 
@@ -137,7 +135,19 @@ public class SkillingOutfitPlugin extends Plugin
         loadMinigameStat("temporossPoints", tracker::setTemporossPoints, 0);
         loadMinigameStat("hunterRumors", tracker::setHunterRumors, 0);
         loadMinigameStat("wintertodtCrates", tracker::setWintertodtCrates, 0);
+        loadMinigameStat("animaBark", tracker::setAnimaBark, 0);
+
+        // Debug printouts for minigame stats
+        System.out.println("[SOT] [Startuppoints] mahoganyContracts: " + tracker.getCarpenterContracts());
+        System.out.println("[SOT] [Startuppoints] mahoganyPoints: " + tracker.getCarpenterPoints());
+        System.out.println("[SOT] [Startuppoints] farmingPoints: " + tracker.getFarmingPoints());
+        System.out.println("[SOT] [Startuppoints] foundryPoints: " + tracker.getFoundryPoints());
+        System.out.println("[SOT] [Startuppoints] temporossPoints: " + tracker.getTemporossPoints());
+        System.out.println("[SOT] [Startuppoints] hunterRumors: " + tracker.getHunterRumors());
+        System.out.println("[SOT] [Startuppoints] wintertodtCrates: " + tracker.getWintertodtCrates());
+        System.out.println("[SOT] [Startuppoints] animaBark: " + tracker.getAnimaBark());
     }
+
 
 
 
@@ -158,9 +168,21 @@ public class SkillingOutfitPlugin extends Plugin
     @Subscribe
     public void onChatMessage(ChatMessage event)
     {
-        if (event.getType() != ChatMessageType.GAMEMESSAGE) return;
+        ChatMessageType type = event.getType();
+        if (type != ChatMessageType.GAMEMESSAGE && type != ChatMessageType.SPAM)
+        {
+            return;
+        }
 
         String message = event.getMessage();
+
+        System.out.println("[SOT] Received ChatMessage type=" + event.getType() + " message=" + message);
+
+        if (ANIMA_BARK_PATTERN.matcher(message).find()) {
+            System.out.println("[SOT] ✅ ANIMA_BARK_PATTERN matched message!");
+        } else {
+            System.out.println("[SOT] ❌ ANIMA_BARK_PATTERN did NOT match message!");
+        }
 
         // Mahogany Homes
         if (handleTwoValueMessage(CONTRACT_PATTERN, message,
@@ -185,6 +207,21 @@ public class SkillingOutfitPlugin extends Plugin
                 safeUpdatePanel(panel::updateAllCaches);
             }
         }, null)) return;
+
+        // Anima-Infused Bark
+        if (handleSingleValueMessage(ANIMA_BARK_PATTERN, message, bark -> {
+            int newTotal = tracker.getAnimaBark() + bark;
+            tracker.setAnimaBark(newTotal);
+            persistConfig("animaBark", newTotal);
+            safeUpdatePanel(panel::updateAllCaches);
+
+            // Print to in-game chat
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "[SOT]", "Added " + bark + " Anima Bark To Total", null);
+
+            // Print to console / system
+            System.out.println("[SOT] Added " + bark + " Anima Bark To Total (New Total: " + newTotal + ")");
+        }, null)) return;
+
     }
 
     // ===== Item Container Changes =====
@@ -196,7 +233,7 @@ public class SkillingOutfitPlugin extends Plugin
                 || id == InventoryID.EQUIPMENT.getId()
                 || id == InventoryID.BANK.getId())
         {
-            System.out.println("[SOT] [onItemContainerChanged] ItemContainerChanged triggered for: " + id);
+            //PRINTOUT  System.out.println("[SOT] [onItemContainerChanged] ItemContainerChanged triggered for: " + id);
 
             safeUpdatePanel(() -> {
                 panel.updateAllCaches();
@@ -220,13 +257,23 @@ public class SkillingOutfitPlugin extends Plugin
     {
         if (event.getGameState() == GameState.LOGGED_IN)
         {
+            // 1. Update all live caches
             tracker.updateInventoryCache();
             tracker.updateEquipmentCache();
             tracker.updateBankCache();
             tracker.updateOwnedItems();
-            safeUpdatePanel(panel::updateAllCaches);
+
+            // 2. Refresh cost item cache based on actual snapshots
+            tracker.refreshCostItemCache();
+
+            // 3. Update panel safely
+            clientThread.invoke(() -> {
+                panel.updateAllCaches();  // updates snapshots and repaints innerPanel
+                panel.refresh();          // ensures outfit display map is up-to-date
+            });
         }
     }
+
 
     // ===== Config Changed =====
     @Subscribe
@@ -249,6 +296,14 @@ public class SkillingOutfitPlugin extends Plugin
 
                 case "notifyOnNew":
                     notifyOnNew = config.notifyOnNew();
+                    break;
+
+                case "animaBark":
+                    if (panel != null)
+                    {
+                        tracker.setAnimaBark(config.animaBark());
+                        panel.refresh();
+                    }
                     break;
 
                 default:

@@ -226,6 +226,18 @@ public interface SkillingOutfitConfig extends Config
         return false;
     }
 
+    @ConfigItem(
+            keyName = "animaBark",
+            name = "Anima-Infused Bark",
+            description = "Set your current amount of Anima-Infused Bark",
+            position = 21
+    )
+    default int animaBark()
+    {
+        return 0; // default starting value
+    }
+
+
 // ----------------------- Skip to Outfits Display -------------------------------
 
     @ConfigSection(

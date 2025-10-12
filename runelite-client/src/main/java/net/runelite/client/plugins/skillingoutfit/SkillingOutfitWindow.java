@@ -17,8 +17,8 @@ public class SkillingOutfitWindow extends JFrame
     private final EventBus eventBus;
     private final ClientThread clientThread;
 
-    public SkillingOutfitWindow(SkillingOutfitConfig config, SkillingOutfitPanel panel,
-                                ConfigManager configManager, EventBus eventBus, ClientThread clientThread)
+    public SkillingOutfitWindow(SkillingOutfitConfig config, SkillingOutfitPanel panel, ConfigManager configManager,
+                                EventBus eventBus, ClientThread clientThread)
     {
         super("Skilling Outfit Tracker - Config");
         this.config = config;

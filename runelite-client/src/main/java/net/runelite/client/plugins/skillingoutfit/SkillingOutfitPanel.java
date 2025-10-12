@@ -387,14 +387,46 @@ public class SkillingOutfitPanel extends PluginPanel
 
     private boolean isItemOwnedCached(int itemId)
     {
-        if (tracker.getObtainedItems().contains(itemId))
-            return true;
+        // First, find the SkillingOutfitItem for this ID
+        SkillingOutfitItem outfitItem = null;
+        outer:
+        for (var entry : SkillingOutfitData.OUTFITS_DATA.values())
+            for (SkillingOutfitItem i : entry.items.values())
+                if (i.getItemId() == itemId)
+                {
+                    outfitItem = i;
+                    break outer;
+                }
 
+        // If we have an outfitItem, check both main ID and otherItemIds
+        if (outfitItem != null)
+        {
+            // Combine main ID + other IDs into one stream
+            List<Integer> allIds = new ArrayList<>();
+            allIds.add(outfitItem.getItemId());
+            allIds.addAll(outfitItem.getOtherItemIds());
+
+            for (int id : allIds)
+            {
+                if (tracker.getObtainedItems().contains(id)) return true;
+
+                int inv = inventoryCacheSnapshot.getOrDefault(id, 0);
+                int equip = equipmentCacheSnapshot.getOrDefault(id, 0);
+                int bank = bankCacheSnapshot.getOrDefault(id, 0);
+                if ((inv + equip + bank) > 0) return true;
+            }
+
+            return false;
+        }
+
+        // fallback: check only tracker and caches for the single ID
+        if (tracker.getObtainedItems().contains(itemId)) return true;
         int inv = inventoryCacheSnapshot.getOrDefault(itemId, 0);
         int equip = equipmentCacheSnapshot.getOrDefault(itemId, 0);
         int bank = bankCacheSnapshot.getOrDefault(itemId, 0);
         return (inv + equip + bank) > 0;
     }
+
 
     public void updateAllCaches()
     {

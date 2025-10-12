@@ -1,6 +1,6 @@
 package net.runelite.client.plugins.skillingoutfit;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 public class SkillingOutfitItem
@@ -10,19 +10,29 @@ public class SkillingOutfitItem
     private final int requirement;
     private final String costText;
     private final int costItemId;
+    private final List<Integer> otherItemIds; // <-- new field
 
-    public SkillingOutfitItem(int itemId, String name, int requirement, String costText, int costItemId)
+    // Constructor with otherItemIds
+    public SkillingOutfitItem(int itemId, String name, int requirement, String costText, int costItemId, List<Integer> otherItemIds)
     {
         if (itemId < 0) throw new IllegalArgumentException("itemId must be non-negative");
         if (requirement < 0) throw new IllegalArgumentException("requirement must be non-negative");
         if (name == null || name.isEmpty()) throw new IllegalArgumentException("name cannot be null or empty");
         if (costText == null) throw new IllegalArgumentException("costText cannot be null");
+        if (otherItemIds == null) throw new IllegalArgumentException("otherItemIds cannot be null");
 
         this.itemId = itemId;
         this.name = name;
         this.requirement = requirement;
         this.costText = costText;
         this.costItemId = costItemId;
+        this.otherItemIds = List.copyOf(otherItemIds);
+    }
+
+    // Constructor without otherItemIds (defaults to empty list)
+    public SkillingOutfitItem(int itemId, String name, int requirement, String costText, int costItemId)
+    {
+        this(itemId, name, requirement, costText, costItemId, List.of());
     }
 
     // ------------------------
@@ -33,6 +43,7 @@ public class SkillingOutfitItem
     public int getRequirement() { return requirement; }
     public String getCostText() { return costText; }
     public int getCostItemId() { return costItemId; }
+    public List<Integer> getOtherItemIds() { return otherItemIds; }
 
     // ------------------------
     // Overrides
@@ -41,7 +52,7 @@ public class SkillingOutfitItem
     @Override
     public String toString()
     {
-        return name + " (ID: " + itemId + ", Requirement: " + requirement + " " + costText + ")";
+        return name + " (ID: " + itemId + ", Requirement: " + requirement + " " + costText + ", Other IDs: " + otherItemIds + ")";
     }
 
     @Override
@@ -54,12 +65,13 @@ public class SkillingOutfitItem
                 requirement == that.requirement &&
                 costItemId == that.costItemId &&
                 name.equals(that.name) &&
-                costText.equals(that.costText);
+                costText.equals(that.costText) &&
+                otherItemIds.equals(that.otherItemIds);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(itemId, name, requirement, costText, costItemId);
+        return Objects.hash(itemId, name, requirement, costText, costItemId, otherItemIds);
     }
 }

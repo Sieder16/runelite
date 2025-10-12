@@ -1,6 +1,7 @@
 package net.runelite.client.plugins.skillingoutfit;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SkillingOutfitData
@@ -79,7 +80,7 @@ public class SkillingOutfitData
         prospector.put(12013, new SkillingOutfitItem(12013, "Prospector Helmet", 40, "Gold Nuggets", 12012));
         prospector.put(12014, new SkillingOutfitItem(12014, "Prospector Jacket", 60, "Gold Nuggets", 12012));
         prospector.put(12015, new SkillingOutfitItem(12015, "Prospector Legs", 50, "Gold Nuggets", 12012));
-        prospector.put(12010, new SkillingOutfitItem(12010, "Prospector Boots", 30, "Gold Nuggets", 12012)); // CHANGE ID BACK TO 12016, SET AS 12010 FOR TESTING AS I HAVE FULL SET
+        prospector.put(12010, new SkillingOutfitItem(12010, "Prospector Boots", 30, "Gold Nuggets", 12012, List.of(1063))); // CHANGE ID BACK TO 12016, SET AS 12010 FOR TESTING AS I HAVE FULL SET
         OUTFITS_DATA.put("Mining - Prospector Kit",
                 new SkillingOutfitDataEntry("displayMining", prospector, "https://oldschool.runescape.wiki/w/Prospector_kit", "Mining"));
 
@@ -122,10 +123,10 @@ public class SkillingOutfitData
 
         // Lumberjack Outfit
         Map<Integer, SkillingOutfitItem> woodcutting = new LinkedHashMap<>();
-        woodcutting.put(10941, new SkillingOutfitItem(10941, "Lumberjack Hat", 1200, "Anima-Infused Bark", 28134));
-        woodcutting.put(10939, new SkillingOutfitItem(10939, "Lumberjack Top", 1500, "Anima-Infused Bark", 28134));
-        woodcutting.put(10940, new SkillingOutfitItem(10940, "Lumberjack Legs", 1300, "Anima-Infused Bark", 28134));
-        woodcutting.put(10933, new SkillingOutfitItem(10933, "Lumberjack Boots", 1000, "Anima-Infused Bark", 28134));
+        woodcutting.put(10941, new SkillingOutfitItem(10941, "Lumberjack Hat", 1200, "Anima-Infused Bark", 28134, List.of(28173)));
+        woodcutting.put(10939, new SkillingOutfitItem(10939, "Lumberjack Top", 1500, "Anima-Infused Bark", 28134, List.of(28169)));
+        woodcutting.put(10940, new SkillingOutfitItem(10940, "Lumberjack Legs", 1300, "Anima-Infused Bark", 28134, List.of(28171)));
+        woodcutting.put(10933, new SkillingOutfitItem(10933, "Lumberjack Boots", 1000, "Anima-Infused Bark", 28134, List.of(28167)));
         OUTFITS_DATA.put("Woodcutting - Lumberjack Outfit",
                 new SkillingOutfitDataEntry("displayWoodcutting", woodcutting, "https://oldschool.runescape.wiki/w/Lumberjack_outfit", "Woodcutting"));
 

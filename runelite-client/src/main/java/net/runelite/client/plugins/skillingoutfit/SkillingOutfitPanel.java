@@ -231,17 +231,35 @@ public class SkillingOutfitPanel extends PluginPanel
         boolean allObtained = items.values().stream().allMatch(item -> isItemOwnedCached(item.getItemId()));
         if (allObtained && !config.showObtainedItems()) return yOffset;
 
+        // ----------------------------
         // Outfit title
+        // ----------------------------
         yOffset += config.firstOutfitSpacer();
-        Color outfitColor = (entry.primarySkill != null) ? SKILL_COLORS.getOrDefault(entry.primarySkill, Color.CYAN) : Color.CYAN;
+        // ✅ Determine outfit color (respecting override config)
+        Color outfitColor;
+        if (config.overrideOutfitColors())                   // Use the user's custom override color
+        {
+            outfitColor = config.outfitNameColor();
+        }
+        else                                                 // Use the default color based on primary skill (or fallback cyan)
+        {
+            outfitColor = (entry.primarySkill != null)
+                    ? SKILL_COLORS.getOrDefault(entry.primarySkill, Color.CYAN)
+                    : Color.CYAN;
+        }
+                                                              // Draw the outfit title
         g.setColor(outfitColor);
         int nameWidth = fm.stringWidth(outfitName);
         int outfitX = (panelWidth - nameWidth) / 2;
         g.drawString(outfitName, outfitX, yOffset + fm.getAscent());
+                                                              // Track hover bounds
         outfitBounds.put(outfitName, new Rectangle(outfitX, yOffset, nameWidth, fm.getHeight()));
+                                                              // Increment offset
         yOffset += fm.getHeight();
 
-        // Points / cost
+        // ----------------------------
+        // Main points / cost line
+        // ----------------------------
         yOffset += config.totalNeededTextSpacer();
         String pointsLine = buildPointsLine(entry, items);
         if (!pointsLine.isEmpty())
@@ -251,7 +269,9 @@ public class SkillingOutfitPanel extends PluginPanel
             yOffset += fm.getHeight();
         }
 
+        // ----------------------------
         // Icons
+        // ----------------------------
         yOffset += config.iconTextSpacer();
         List<Map.Entry<Integer, SkillingOutfitItem>> itemList = items.entrySet().stream()
                 .filter(e -> config.showObtainedItems() || !isItemOwnedCached(e.getKey()))
@@ -290,23 +310,24 @@ public class SkillingOutfitPanel extends PluginPanel
         }
         yOffset += rows * (config.iconSize() + config.iconGapSpacing());
 
+        // ----------------------------
+        // Extra costs (centered)
+        // ----------------------------
+        yOffset = drawOutfitExtraCosts(g, entry.items, panelWidth, yOffset);
+
         return yOffset;
     }
+
 
     // Updated buildPointsLine to only count remaining unowned items
     private String buildPointsLine(SkillingOutfitData.SkillingOutfitDataEntry entry, Map<Integer, SkillingOutfitItem> items)
     {
-        // Skip entirely if the config disables this line
-        if (!config.showTotalObtain())
-        {
-            return "";
-        }
+        if (!config.showTotalObtain()) return "";
 
         int totalRequired = 0;
         int costItemId = -1;
         String costText = "";
 
-        // Calculate remaining requirements only for items not yet obtained
         for (SkillingOutfitItem item : items.values())
         {
             if (!isItemOwnedCached(item.getItemId()))
@@ -324,26 +345,19 @@ public class SkillingOutfitPanel extends PluginPanel
 
         switch (entry.primarySkill)
         {
-            case "Construction":
-                return tracker.getCarpenterPoints() + "/" + totalRequired + " Carpenter Points Owned";
-            case "Farming":
-                return tracker.getFarmingPoints() + "/" + totalRequired + " Farming Points Owned";
-            case "Smithing":
-                return tracker.getFoundryPoints() + "/" + totalRequired + " Foundry Reputation Owned";
-            case "Firemaking":
-                return tracker.getWintertodtCrates() + " Crates Opened";
-            case "Fishing":
-                return tracker.getTemporossPoints() + " Tempoross Kills";
-            case "Hunter":
-                return tracker.getHunterRumors() + " Hunter Rumors Completed";
-            case "Agility":
-                return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
-            case "Woodcutting":
-                return tracker.getAnimaBark() + "/" + totalRequired +  " " + costText + " Owned";
-            default:
-                return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
+            case "Construction": return tracker.getCarpenterPoints() + "/" + totalRequired + " Carpenter Points Owned";
+            case "Farming": return tracker.getFarmingPoints() + "/" + totalRequired + " Farming Points Owned";
+            case "Smithing": return tracker.getFoundryReputation() + "/" + totalRequired + " Reputation Owned";
+            case "Firemaking": return tracker.getWintertodtCrates() + " Crates Opened";
+            case "Fishing": return tracker.getTemporossPoints() + " Tempoross Kills";
+            case "Hunter": return tracker.getHunterRumors() + " Hunter Rumors Completed";
+            case "Agility": return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
+            case "Woodcutting": return tracker.getAnimaBark() + "/" + totalRequired + " " + costText + " Owned";
+            default: return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
         }
     }
+
+
 
 
 
@@ -448,23 +462,49 @@ public class SkillingOutfitPanel extends PluginPanel
 
     private Dimension calculatePreferredSize()
     {
-        int width = 300, height = config.panelTitleSpacer();
+        int width = 300;
+        int height = config.panelTitleSpacer();
         FontMetrics fm = getFontMetrics(getFont());
 
-        if (config.displayCollectedOutfits()) height += config.outfitTextSpacer() + fm.getHeight();
-        if (config.displayCollectedItems()) height += config.itemTextSpacer() + fm.getHeight();
+        if (config.displayCollectedOutfits())
+            height += config.outfitTextSpacer() + fm.getHeight();
+        if (config.displayCollectedItems())
+            height += config.itemTextSpacer() + fm.getHeight();
 
         for (String outfitName : SkillingOutfitData.OUTFITS_DATA.keySet())
         {
             if (!shouldDisplayOutfit(outfitName)) continue;
             SkillingOutfitData.SkillingOutfitDataEntry entry = SkillingOutfitData.OUTFITS_DATA.get(outfitName);
             if (entry == null) continue;
-            height += config.firstOutfitSpacer() + fm.getHeight() + config.totalNeededTextSpacer() + fm.getHeight() + config.iconTextSpacer();
+
+            height += config.firstOutfitSpacer() + fm.getHeight();               // title
+            height += config.totalNeededTextSpacer() + fm.getHeight();           // points line
+            height += config.iconTextSpacer();                                   // spacing before icons
+
             int rows = (int) Math.ceil(entry.items.size() / (double) config.maxCols());
-            height += rows * (config.iconSize() + config.iconGapSpacing());
+            height += rows * (config.iconSize() + config.iconGapSpacing());      // icons
+
+            // --- Extra costs per item ---
+            for (SkillingOutfitItem item : entry.items.values())
+            {
+                List<SkillingOutfitItem.CostEntry> extra = SkillingOutfitData.EXTRA_COSTS.get(item.getItemId());
+                if (extra != null && !extra.isEmpty())
+                {
+                    height += 10; // spacing before header (matches drawOutfitExtraCosts)
+                    height += fm.getHeight(); // header line
+                    height += fm.getHeight() * extra.size(); // each extra resource line
+                    height += 6; // spacing after each item
+                }
+            }
         }
+
+        // add small bottom buffer
+        height += 20;
+
         return new Dimension(width, height);
     }
+
+
 
     public void refresh()
     {
@@ -560,6 +600,93 @@ public class SkillingOutfitPanel extends PluginPanel
 
             }
         }
+    }
+
+    // Updated drawOutfitExtraCosts
+    private int drawOutfitExtraCosts(Graphics2D g, Map<Integer, SkillingOutfitItem> items, int panelWidth, int startY)
+    {
+        // Skip entirely if the user disabled "Show Price To Obtain"
+        if (!config.showTotalObtain() || !config.showItemTotalObtain())
+        {
+            return startY;
+        }
+
+        int y = startY;
+        y += 10; // spacing before totals
+        FontMetrics fm = g.getFontMetrics();
+
+        for (SkillingOutfitItem item : items.values())
+        {
+            List<SkillingOutfitItem.CostEntry> extra = SkillingOutfitData.EXTRA_COSTS.get(item.getItemId());
+            if (extra == null || extra.isEmpty())
+                continue;
+
+            // ✅ Skip if player already owns this outfit item
+            if (tracker.getObtainedItems().contains(item.getItemId()))
+            {
+                continue;
+            }
+
+            // ---- Check if all extra costs are already met ----
+            boolean allObtained = true;
+            for (SkillingOutfitItem.CostEntry e : extra)
+            {
+                int owned = (e.getItemId() == 28134)
+                        ? config.animaBark()
+                        : tracker.getTotalCostItem(e.getItemId());
+                if (owned < e.getAmount())
+                {
+                    allObtained = false;
+                    break;
+                }
+            }
+
+            // ✅ Skip if all costs are satisfied
+            if (allObtained)
+                continue;
+
+            // ---- Determine primary skill for this item ----
+            String primarySkill = null;
+            for (SkillingOutfitData.SkillingOutfitDataEntry entry : SkillingOutfitData.OUTFITS_DATA.values())
+            {
+                if (entry.items.containsKey(item.getItemId()))
+                {
+                    primarySkill = entry.primarySkill;
+                    break;
+                }
+            }
+
+            // ---- Determine header color ----
+            Color headerColor = config.overrideOutfitColors()
+                    ? config.outfitNameColor()
+                    : (primarySkill != null
+                    ? SKILL_COLORS.getOrDefault(primarySkill, new Color(180, 200, 255))
+                    : new Color(180, 200, 255));
+
+            // ---- Draw header ----
+            String header = item.getName() + " Total Cost";
+            int headerX = (panelWidth - fm.stringWidth(header)) / 2;
+            g.setColor(headerColor);
+            g.drawString(header, headerX, y);
+            y += fm.getHeight();
+
+            // ---- Draw resource lines ----
+            g.setColor(Color.LIGHT_GRAY);
+            for (SkillingOutfitItem.CostEntry e : extra)
+            {
+                int owned = (e.getItemId() == 28134)
+                        ? config.animaBark()
+                        : tracker.getTotalCostItem(e.getItemId());
+                String line = String.format("%,d/%d %s", owned, e.getAmount(), e.getItemName());
+                int lineX = (panelWidth - fm.stringWidth(line)) / 2;
+                g.drawString(line, lineX, y);
+                y += fm.getHeight();
+            }
+
+            y += 6; // spacing between items
+        }
+
+        return y;
     }
 
 }

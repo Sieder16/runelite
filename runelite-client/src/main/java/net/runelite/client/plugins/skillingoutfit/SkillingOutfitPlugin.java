@@ -62,24 +62,18 @@ public class SkillingOutfitPlugin extends Plugin
     private static final Pattern TITHE_FARM_PATTERN = Pattern.compile(
             "You now have <col=[0-9a-f]+>(\\d+)</col> reward points\\."
     );
-    //Foundry Not Completed
-    private static final Pattern FOUNDRY_PATTERN = Pattern.compile(
-            "You now have <col=[0-9a-f]+>(\\d+)</col> Foundry Reputation\\."
-    );
     private static final Pattern TEMPOROSS_PATTERN = Pattern.compile(
             "Your Tempoross kill count is: <col=[0-9a-f]+>(\\d+)</col>\\."
     );
-    // Hunter Not Completed
     private static final Pattern HUNTER_PATTERN = Pattern.compile(
-            "You have <col=[0-9a-f]+>(\\d+)</col> completed hunter rumours\\."
+            "You have completed <col=[0-9a-fA-F]+>(\\d+)</col> rumours for the Hunter Guild\\."
     );
     // Wintertodt Not Completed?
     private static final Pattern WINTERTODT_PATTERN = Pattern.compile(
             "You have received <col=[0-9a-f]+>(\\d+)</col> Wintertodt supply crates\\."
     );
-    // Anima-Infused Bark
     private static final Pattern ANIMA_BARK_PATTERN = Pattern.compile(
-            "You've been awarded <col=[0-9a-fA-F]+>(\\d+)</col> Anima-infused bark\\."
+            "You've been awarded\\s*(?:<col=[0-9A-Fa-f]+>)?([\\d,]+)\\s*Anima-infused bark(?:</col>)?\\.?"
     );
 
     // ===== Startup =====
@@ -131,7 +125,6 @@ public class SkillingOutfitPlugin extends Plugin
         loadMinigameStat("mahoganyContracts", tracker::setCarpenterContracts, 0);
         loadMinigameStat("mahoganyPoints", tracker::setCarpenterPoints, 0);
         loadMinigameStat("farmingPoints", tracker::setFarmingPoints, 0);
-        loadMinigameStat("foundryPoints", tracker::setFoundryPoints, 0);
         loadMinigameStat("temporossPoints", tracker::setTemporossPoints, 0);
         loadMinigameStat("hunterRumors", tracker::setHunterRumors, 0);
         loadMinigameStat("wintertodtCrates", tracker::setWintertodtCrates, 0);
@@ -141,7 +134,7 @@ public class SkillingOutfitPlugin extends Plugin
         System.out.println("[SOT] [Startuppoints] mahoganyContracts: " + tracker.getCarpenterContracts());
         System.out.println("[SOT] [Startuppoints] mahoganyPoints: " + tracker.getCarpenterPoints());
         System.out.println("[SOT] [Startuppoints] farmingPoints: " + tracker.getFarmingPoints());
-        System.out.println("[SOT] [Startuppoints] foundryPoints: " + tracker.getFoundryPoints());
+        System.out.println("[SOT] [Startuppoints] foundryPoints: " + tracker.getFoundryReputation());
         System.out.println("[SOT] [Startuppoints] temporossPoints: " + tracker.getTemporossPoints());
         System.out.println("[SOT] [Startuppoints] hunterRumors: " + tracker.getHunterRumors());
         System.out.println("[SOT] [Startuppoints] wintertodtCrates: " + tracker.getWintertodtCrates());
@@ -176,14 +169,6 @@ public class SkillingOutfitPlugin extends Plugin
 
         String message = event.getMessage();
 
-        System.out.println("[SOT] Received ChatMessage type=" + event.getType() + " message=" + message);
-
-        if (ANIMA_BARK_PATTERN.matcher(message).find()) {
-            System.out.println("[SOT] ✅ ANIMA_BARK_PATTERN matched message!");
-        } else {
-            System.out.println("[SOT] ❌ ANIMA_BARK_PATTERN did NOT match message!");
-        }
-
         // Mahogany Homes
         if (handleTwoValueMessage(CONTRACT_PATTERN, message,
                 (contracts, points) -> {
@@ -195,7 +180,6 @@ public class SkillingOutfitPlugin extends Plugin
 
         // Single-value minigames
         if (handleSingleValueMessage(TITHE_FARM_PATTERN, message, tracker::setFarmingPoints, "farmingPoints")) return;
-        if (handleSingleValueMessage(FOUNDRY_PATTERN, message, tracker::setFoundryPoints, "foundryPoints")) return;
         if (handleSingleValueMessage(TEMPOROSS_PATTERN, message, tracker::setTemporossPoints, "temporossPoints")) return;
         if (handleSingleValueMessage(HUNTER_PATTERN, message, tracker::setHunterRumors, "hunterRumors")) return;
 
@@ -251,6 +235,18 @@ public class SkillingOutfitPlugin extends Plugin
         safeUpdatePanel(panel::updateAllCaches);
     }
 
+    @Subscribe
+    public void onVarbitChanged(VarbitChanged event)
+    {
+        if (event.getVarpId() == tracker.FOUNDRY_REPUTATION)
+        {
+            clientThread.invoke(() -> {
+                tracker.foundryReputation = client.getVarpValue(tracker.FOUNDRY_REPUTATION);
+                System.out.println("[SOT] [VarPlayer] Foundry Rep: " + tracker.foundryReputation);
+            });
+        }
+    }
+
     // ===== Game State Changes =====
     @Subscribe
     public void onGameStateChanged(GameStateChanged event)
@@ -270,6 +266,8 @@ public class SkillingOutfitPlugin extends Plugin
             clientThread.invoke(() -> {
                 panel.updateAllCaches();  // updates snapshots and repaints innerPanel
                 panel.refresh();          // ensures outfit display map is up-to-date
+                tracker.foundryReputation = client.getVarpValue(tracker.FOUNDRY_REPUTATION);
+                System.out.println("[SOT] [GameState] Foundry Rep (login): " + tracker.foundryReputation);
             });
         }
     }

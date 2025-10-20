@@ -6,12 +6,15 @@ import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.InventoryID;
-import net.runelite.api.widgets.Widget;
+import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.api.ChatMessageType;
+import net.runelite.client.game.ItemManager;
 
 import javax.inject.Inject;
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 @Getter
@@ -21,7 +24,6 @@ public class SkillingOutfitTracker
     private int carpenterPoints = 0;
     private int carpenterContracts = 0;
     private int farmingPoints = 0;
-    private int foundryPoints = 0;
     private int temporossPoints = 0;
     private int hunterRumors = 0;
     private int wintertodtCrates = 0;
@@ -37,6 +39,8 @@ public class SkillingOutfitTracker
     private final ClientThread clientThread;
     private final ConfigManager configManager;
     private final String configGroup = "skillingoutfit";
+    private final SkillingOutfitConfig config;
+    private final ItemManager itemManager;
 
     private Map<Integer, Integer> inventoryCacheSnapshot = new HashMap<>();
     private Map<Integer, Integer> equipmentCacheSnapshot = new HashMap<>();
@@ -46,11 +50,13 @@ public class SkillingOutfitTracker
     private SkillingOutfitPanel panel;
 
     @Inject
-    public SkillingOutfitTracker(Client client, ClientThread clientThread, ConfigManager configManager)
+    public SkillingOutfitTracker(Client client, ClientThread clientThread, ConfigManager configManager, SkillingOutfitConfig config, ItemManager itemManager)
     {
         this.client = client;
         this.clientThread = clientThread;
         this.configManager = configManager;
+        this.config = config;
+        this.itemManager = itemManager;
 
         loadObtainedItems();
         loadBankCache();
@@ -196,27 +202,6 @@ public class SkillingOutfitTracker
     }
 
     // ======== OBTAINED ITEMS ========
-    public void addObtainedItem(int itemId)
-    {
-        if (obtainedItems.add(itemId))  // only save if it’s new
-        {
-            //PRINTOUT System.out.println("[SOT] [addObtainedItem] Adding new obtained item: " + itemId);
-            saveObtainedItems();
-
-            // Update caches and refresh panel
-            if (panel != null)
-            {
-                SwingUtilities.invokeLater(panel::updateAllCaches);
-            }
-        }
-        //PRINTOUT else
-        //PRINTOUT  {
-            //PRINTOUT System.out.println("[SOT] [addObtainedItem] Item already obtained: " + itemId);
-        //PRINTOUT }
-    }
-
-
-
     public void saveObtainedItems()
     {
         StringBuilder sb = new StringBuilder();
@@ -266,6 +251,35 @@ public class SkillingOutfitTracker
             {
                 ownedCache.put(itemId, true);
                 anyNew = true;
+
+                // Find the outfit name and item name
+                String outfitName = null;
+                String itemName = null;
+
+                for (Map.Entry<String, SkillingOutfitData.SkillingOutfitDataEntry> entry : SkillingOutfitData.OUTFITS_DATA.entrySet())
+                {
+                    SkillingOutfitData.SkillingOutfitDataEntry outfitEntry = entry.getValue();
+                    Map<Integer, SkillingOutfitItem> items = outfitEntry.items;
+
+                    if (items.containsKey(itemId))
+                    {
+                        outfitName = entry.getKey();              // <-- this is "Agility - Graceful Outfit"
+                        itemName = items.get(itemId).getName();   // <-- e.g., "Graceful Hood"
+                        break;
+                    }
+                }
+
+                if (client != null && outfitName != null && itemName != null && config.notifyOnNew())
+                {
+                    final String chatOutfitName = outfitName;
+                    final String chatItemName = itemName;
+                    clientThread.invokeLater(() -> client.addChatMessage(
+                            ChatMessageType.GAMEMESSAGE,
+                            "",
+                            "[SOT] <col=00ff00>You have obtained " + chatItemName + " from " + chatOutfitName + "</col>",
+                            null
+                    ));
+                }
             }
         }
 
@@ -283,6 +297,8 @@ public class SkillingOutfitTracker
             SwingUtilities.invokeLater(() -> panel.updateAllCaches());
         }
     }
+
+
 
 
     public void markObtainedFromConfig()
@@ -335,11 +351,14 @@ public class SkillingOutfitTracker
                 costItemCache.put(costId, total);
 
                 // Debug print
-                System.out.println("[SOT] [refreshCostItemCache] Loading cost item: ID=" + costId
-                        + ", Name=" + item.getCostText()
-                        + ", Total Owned=" + total);
+               // System.out.println("[SOT] [refreshCostItemCache] Loading cost item: ID=" + costId
+               //         + ", Name=" + item.getCostText()
+               //         + ", Total Owned=" + total);
             }
         }
     }
+
+    public static final int FOUNDRY_REPUTATION = 3436;
+    public int foundryReputation = 0; // store the latest value
 
 }

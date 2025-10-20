@@ -226,15 +226,28 @@ public interface SkillingOutfitConfig extends Config
         return false;
     }
 
+    // 18. Anima Bark Setter
     @ConfigItem(
             keyName = "animaBark",
             name = "Anima-Infused Bark",
             description = "Set your current amount of Anima-Infused Bark",
-            position = 21
+            position = 18
     )
     default int animaBark()
     {
         return 0; // default starting value
+    }
+
+    // 19. Per Item Total Obtain
+    @ConfigItem(
+            keyName = "showItemTotalObtain",
+            name = "Show Price To Obtain Items",
+            description = "Show total requirements for each item that have dual requirements",
+            position = 19
+    )
+    default boolean showItemTotalObtain()
+    {
+        return true;
     }
 
 

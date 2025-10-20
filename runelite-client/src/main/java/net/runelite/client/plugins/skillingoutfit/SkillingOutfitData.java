@@ -1,5 +1,6 @@
 package net.runelite.client.plugins.skillingoutfit;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class SkillingOutfitData
         prospector.put(12013, new SkillingOutfitItem(12013, "Prospector Helmet", 40, "Gold Nuggets", 12012));
         prospector.put(12014, new SkillingOutfitItem(12014, "Prospector Jacket", 60, "Gold Nuggets", 12012));
         prospector.put(12015, new SkillingOutfitItem(12015, "Prospector Legs", 50, "Gold Nuggets", 12012));
-        prospector.put(12010, new SkillingOutfitItem(12010, "Prospector Boots", 30, "Gold Nuggets", 12012, List.of(1063))); // CHANGE ID BACK TO 12016, SET AS 12010 FOR TESTING AS I HAVE FULL SET
+        prospector.put(12016, new SkillingOutfitItem(12016, "Prospector Boots", 30, "Gold Nuggets", 12012));
         OUTFITS_DATA.put("Mining - Prospector Kit",
                 new SkillingOutfitDataEntry("displayMining", prospector, "https://oldschool.runescape.wiki/w/Prospector_kit", "Mining"));
 
@@ -148,4 +149,39 @@ public class SkillingOutfitData
             this.primarySkill = primarySkill;
         }
     }
+
+    // More than 1 cost item s
+    public static final Map<Integer, List<SkillingOutfitItem.CostEntry>> EXTRA_COSTS = new HashMap<>();
+
+    static
+    {
+        // -------------------------------
+        // Extra costs for Lumberjack Outfit
+        // -------------------------------
+        EXTRA_COSTS.put(10941, List.of(
+                new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1200, 28134),
+                new SkillingOutfitItem.CostEntry("Yew Logs", 200, 1515),
+                new SkillingOutfitItem.CostEntry("Magic Logs", 100, 1513)
+        ));
+
+        EXTRA_COSTS.put(10939, List.of(
+                new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1500, 28134),
+                new SkillingOutfitItem.CostEntry("Yew Logs", 60, 1515),
+                new SkillingOutfitItem.CostEntry("Magic Logs", 120, 1513),
+                new SkillingOutfitItem.CostEntry("Redwood Logs", 120, 19669)
+        ));
+
+        EXTRA_COSTS.put(10940, List.of(
+                new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1300, 28134),
+                new SkillingOutfitItem.CostEntry("Yew Logs", 160, 1515),
+                new SkillingOutfitItem.CostEntry("Magic Logs", 140, 1513)
+        ));
+
+        EXTRA_COSTS.put(10933, List.of(
+                new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1000, 28134),
+                new SkillingOutfitItem.CostEntry("Maple Logs", 100, 1517),
+                new SkillingOutfitItem.CostEntry("Yew Logs", 200, 1515)
+        ));
+    }
+
 }

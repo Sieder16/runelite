@@ -10,7 +10,7 @@ public class SkillingOutfitItem
     private final int requirement;
     private final String costText;
     private final int costItemId;
-    private final List<Integer> otherItemIds; // <-- new field
+    private final List<Integer> otherItemIds;
 
     // Constructor with otherItemIds
     public SkillingOutfitItem(int itemId, String name, int requirement, String costText, int costItemId, List<Integer> otherItemIds)
@@ -27,6 +27,7 @@ public class SkillingOutfitItem
         this.costText = costText;
         this.costItemId = costItemId;
         this.otherItemIds = List.copyOf(otherItemIds);
+
     }
 
     // Constructor without otherItemIds (defaults to empty list)
@@ -74,4 +75,26 @@ public class SkillingOutfitItem
     {
         return Objects.hash(itemId, name, requirement, costText, costItemId, otherItemIds);
     }
+
+    // ---------------------------
+    // Public static CostEntry class
+    // ---------------------------
+    public static class CostEntry
+    {
+        private final String itemName;
+        private final int amount;
+        private final int itemId;
+
+        public CostEntry(String itemName, int amount, int itemId)
+        {
+            this.itemName = itemName;
+            this.amount = amount;
+            this.itemId = itemId;
+        }
+
+        public String getItemName() { return itemName; }
+        public int getAmount() { return amount; }
+        public int getItemId() { return itemId; }
+    }
+
 }

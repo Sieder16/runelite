@@ -68,9 +68,8 @@ public class SkillingOutfitPlugin extends Plugin
     private static final Pattern HUNTER_PATTERN = Pattern.compile(
             "You have completed <col=[0-9a-fA-F]+>(\\d+)</col> rumours for the Hunter Guild\\."
     );
-    // Wintertodt Not Completed?
     private static final Pattern WINTERTODT_PATTERN = Pattern.compile(
-            "You have received <col=[0-9a-f]+>(\\d+)</col> Wintertodt supply crates\\."
+            "Your subdued Wintertodt count is: <col=[0-9a-f]+>(\\d+)</col>\\."
     );
     private static final Pattern ANIMA_BARK_PATTERN = Pattern.compile(
             "You've been awarded\\s*(?:<col=[0-9A-Fa-f]+>)?([\\d,]+)\\s*Anima-infused bark(?:</col>)?\\.?"

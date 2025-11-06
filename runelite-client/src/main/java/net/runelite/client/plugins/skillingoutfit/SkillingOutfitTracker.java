@@ -236,68 +236,91 @@ public class SkillingOutfitTracker
             //PRINTOUT }
     }
 
-    public void updateOwnedItemsFromCaches()
-    {
-        Set<Integer> allItems = new HashSet<>();
-        allItems.addAll(getInventoryCacheSnapshot().keySet());
-        allItems.addAll(getEquipmentCacheSnapshot().keySet());
-        allItems.addAll(getBankCacheSnapshot().keySet());
+	public void updateOwnedItemsFromCaches()
+	{
+		ownedCache.clear();
 
-        boolean anyNew = false;
+		// Combine tracked item sources
+		Set<Integer> allTrackedItems = new HashSet<>();
+		allTrackedItems.addAll(inventoryCacheSnapshot.keySet());
+		allTrackedItems.addAll(bankCacheSnapshot.keySet());
 
-        for (int itemId : allItems)
-        {
-            if (obtainedItems.add(itemId)) // only new items
-            {
-                ownedCache.put(itemId, true);
-                anyNew = true;
+		// Include equipped items
+		ItemContainer equipmentContainer = client.getItemContainer(InventoryID.EQUIPMENT);
+		if (equipmentContainer != null)
+		{
+			for (Item item : equipmentContainer.getItems())
+			{
+				if (item != null && item.getId() > 0)
+				{
+					allTrackedItems.add(item.getId());
+				}
+			}
+		}
 
-                // Find the outfit name and item name
-                String outfitName = null;
-                String itemName = null;
+		// Track owned items
+		for (int itemId : allTrackedItems)
+		{
+			boolean isOwned =
+					inventoryCacheSnapshot.getOrDefault(itemId, 0) > 0 ||
+							bankCacheSnapshot.getOrDefault(itemId, 0) > 0 ||
+							(equipmentContainer != null && Arrays.stream(equipmentContainer.getItems())
+									.anyMatch(i -> i != null && i.getId() == itemId));
 
-                for (Map.Entry<String, SkillingOutfitData.SkillingOutfitDataEntry> entry : SkillingOutfitData.OUTFITS_DATA.entrySet())
-                {
-                    SkillingOutfitData.SkillingOutfitDataEntry outfitEntry = entry.getValue();
-                    Map<Integer, SkillingOutfitItem> items = outfitEntry.items;
+			boolean wasOwnedBefore = ownedCache.getOrDefault(itemId, false);
 
-                    if (items.containsKey(itemId))
-                    {
-                        outfitName = entry.getKey();              // <-- this is "Agility - Graceful Outfit"
-                        itemName = items.get(itemId).getName();   // <-- e.g., "Graceful Hood"
-                        break;
-                    }
-                }
+			ownedCache.put(itemId, isOwned);
 
-                if (client != null && outfitName != null && itemName != null && config.notifyOnNew())
-                {
-                    final String chatOutfitName = outfitName;
-                    final String chatItemName = itemName;
-                    clientThread.invokeLater(() -> client.addChatMessage(
-                            ChatMessageType.GAMEMESSAGE,
-                            "",
-                            "[SOT] <col=00ff00>You have obtained " + chatItemName + " from " + chatOutfitName + "</col>",
-                            null
-                    ));
-                }
-            }
-        }
+			// ✅ Only trigger notification if it's truly new — not just moved
+			if (isOwned && !obtainedItems.contains(itemId))
+			{
+				obtainedItems.add(itemId);
 
-        if (anyNew)
-        {
-            saveObtainedItems();   // only save once if there were new items
-        }
+				// Send chat only if it's *newly added* to obtainedItems, not from equip/unequip
+				if (!wasOwnedBefore)
+				{
+					String outfitName = null;
+					String itemName = null;
 
-        // Update cost totals so buildPointsLine shows correct x/x
-        refreshCostItemCache();
+					for (Map.Entry<String, SkillingOutfitData.SkillingOutfitDataEntry> entry : SkillingOutfitData.OUTFITS_DATA.entrySet())
+					{
+						SkillingOutfitData.SkillingOutfitDataEntry outfitEntry = entry.getValue();
+						Map<Integer, SkillingOutfitItem> items = outfitEntry.items;
 
-        // Optionally refresh panel UI
-        if (panel != null)
-        {
-            SwingUtilities.invokeLater(() -> panel.updateAllCaches());
-        }
-    }
+						if (items.containsKey(itemId))
+						{
+							outfitName = entry.getKey();
+							itemName = items.get(itemId).getName();
+							break;
+						}
+					}
 
+					if (client != null && outfitName != null && itemName != null && config.notifyOnNew())
+					{
+						final String chatOutfitName = outfitName;
+						final String chatItemName = itemName;
+						clientThread.invokeLater(() -> client.addChatMessage(
+								ChatMessageType.GAMEMESSAGE,
+								"",
+								"[SOT] <col=00ff00>You have obtained " + chatItemName + " from " + chatOutfitName + "</col>",
+								null
+						));
+					}
+				}
+			}
+		}
+
+		// Remove items that are no longer owned (dropped, sold, etc.)
+		obtainedItems.removeIf(id -> !ownedCache.getOrDefault(id, false));
+
+		saveObtainedItems();
+		refreshCostItemCache();
+
+		if (panel != null)
+		{
+			SwingUtilities.invokeLater(() -> panel.updateAllCaches());
+		}
+	}
 
 
 

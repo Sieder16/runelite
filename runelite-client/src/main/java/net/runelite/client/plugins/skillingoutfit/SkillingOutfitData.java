@@ -13,12 +13,12 @@ public class SkillingOutfitData
     {
         // Graceful Outfit
         Map<Integer, SkillingOutfitItem> graceful = new LinkedHashMap<>();
-        graceful.put(11850, new SkillingOutfitItem(11850, "Graceful Hood", 35, "Marks of Grace", 11849));
-        graceful.put(11854, new SkillingOutfitItem(11854, "Graceful Top", 55, "Marks of Grace", 11849));
-        graceful.put(11856, new SkillingOutfitItem(11856, "Graceful Legs", 60, "Marks of Grace", 11849));
-        graceful.put(11858, new SkillingOutfitItem(11858, "Graceful Gloves", 30, "Marks of Grace", 11849));
-        graceful.put(11860, new SkillingOutfitItem(11860, "Graceful Boots", 40, "Marks of Grace", 11849));
-        graceful.put(11852, new SkillingOutfitItem(11852, "Graceful Cape", 40, "Marks of Grace", 11849));
+        graceful.put(11850, new SkillingOutfitItem(11850, "Graceful Hood", 35, "Marks of Grace", 11849, List.of(27444,27446,21061,21063,13579,13580,24743,24745,13627,13628,13667,13668,13603,13604,13591,13592,13615,13616,25069,25071,30045,30047,11851)));
+        graceful.put(11854, new SkillingOutfitItem(11854, "Graceful Top", 55, "Marks of Grace", 11849, List.of(27450,27452,21067,21069,13583,13584,24749,24751,13631,13632,13671,13672,13607,13608,13595,13596,13619,13620,25075,25077,30051,30053,11855)));
+        graceful.put(11856, new SkillingOutfitItem(11856, "Graceful Legs", 60, "Marks of Grace", 11849, List.of(27453,27455,21070,21072,13585,13586,24752,24754,13633,13634,13673,13674,13609,13610,13597,13598,13621,13622,25078,25080,30054,30056,11857)));
+        graceful.put(11858, new SkillingOutfitItem(11858, "Graceful Gloves", 30, "Marks of Grace", 11849, List.of(27456,27458,21073,21075,13587,13588,24755,24757,13635,13636,13675,13676,13611,13612,13599,13600,13623,13624,25081,25083,30057,30059,11859)));
+        graceful.put(11860, new SkillingOutfitItem(11860, "Graceful Boots", 40, "Marks of Grace", 11849, List.of(27459,27461,21076,21078,13589,13590,24758,24760,13637,13638,13677,13678,13613,13614,13601,13602,13625,13626,25084,25086,30060,30062,11861)));
+        graceful.put(11852, new SkillingOutfitItem(11852, "Graceful Cape", 40, "Marks of Grace", 11849, List.of(27447,27449,21064,21066,13581,13582,24746,24748,13629,13630,13669,13670,13605,13606,13593,13594,13617,13618,25072,25074,30048,30050,11853)));
         OUTFITS_DATA.put("Agility - Graceful Outfit",
                 new SkillingOutfitDataEntry("displayAgility", graceful, "https://oldschool.runescape.wiki/w/Graceful_outfit", "Agility"));
 
@@ -78,10 +78,10 @@ public class SkillingOutfitData
 
         // Prospector Kit
         Map<Integer, SkillingOutfitItem> prospector = new LinkedHashMap<>();
-        prospector.put(12013, new SkillingOutfitItem(12013, "Prospector Helmet", 40, "Gold Nuggets", 12012));
-        prospector.put(12014, new SkillingOutfitItem(12014, "Prospector Jacket", 60, "Gold Nuggets", 12012));
-        prospector.put(12015, new SkillingOutfitItem(12015, "Prospector Legs", 50, "Gold Nuggets", 12012));
-        prospector.put(12016, new SkillingOutfitItem(12016, "Prospector Boots", 30, "Gold Nuggets", 12012));
+        prospector.put(12013, new SkillingOutfitItem(12013, "Prospector Helmet", 40, "Gold Nuggets", 12012, List.of(25549,29472)));
+        prospector.put(12014, new SkillingOutfitItem(12014, "Prospector Jacket", 60, "Gold Nuggets", 12012, List.of(25551,29474)));
+        prospector.put(12015, new SkillingOutfitItem(12015, "Prospector Legs", 50, "Gold Nuggets", 12012, List.of(25553,29476)));
+        prospector.put(12016, new SkillingOutfitItem(12016, "Prospector Boots", 30, "Gold Nuggets", 12012, List.of(25555,29478)));
         OUTFITS_DATA.put("Mining - Prospector Kit",
                 new SkillingOutfitDataEntry("displayMining", prospector, "https://oldschool.runescape.wiki/w/Prospector_kit", "Mining"));
 
@@ -96,9 +96,9 @@ public class SkillingOutfitData
 
         // Runecraft Robes
         Map<Integer, SkillingOutfitItem> runecraft = new LinkedHashMap<>();
-        runecraft.put(26850, new SkillingOutfitItem(26850, "Hat Of The Eye", 400, "Abyssal Pearls", 26792));
-        runecraft.put(26854, new SkillingOutfitItem(26854, "Robe Top Of The Eye", 350, "Abyssal Pearls", 26792));
-        runecraft.put(26852, new SkillingOutfitItem(26852, "Robe Bottoms Of The Eye", 350, "Abyssal Pearls", 26792));
+        runecraft.put(26850, new SkillingOutfitItem(26850, "Hat Of The Eye", 400, "Abyssal Pearls", 26792, List.of(26858,26864,26870)));
+        runecraft.put(26852, new SkillingOutfitItem(26852, "Robe Top Of The Eye", 350, "Abyssal Pearls", 26792, List.of(26860,26866,26872)));
+        runecraft.put(26854, new SkillingOutfitItem(26854, "Robe Bottoms Of The Eye", 350, "Abyssal Pearls", 26792, List.of(26862,26868,26874)));
         runecraft.put(26856, new SkillingOutfitItem(26856, "Boots Of The Eye", 250, "Abyssal Pearls", 26792));
         OUTFITS_DATA.put("Runecraft - Raiments Of The Eye",
                 new SkillingOutfitDataEntry("displayRunecraft", runecraft, "https://oldschool.runescape.wiki/w/Raiments_of_the_Eye", "Runecraft"));

@@ -37,6 +37,8 @@ public class SkillingOutfitPanel extends PluginPanel
     private final Map<String, Rectangle> outfitBounds = new HashMap<>();
     private final Map<String, BooleanSupplier> outfitDisplayMap = new HashMap<>();
     private final Map<String, Integer> remainingCounts = new HashMap<>();
+    private final Map<Integer, SkillingOutfitItem> hoverItemMap = new HashMap<>();
+
 
     private final Map<Integer, Integer> inventoryCacheSnapshot = new ConcurrentHashMap<>();
     private final Map<Integer, Integer> equipmentCacheSnapshot = new ConcurrentHashMap<>();
@@ -161,6 +163,10 @@ public class SkillingOutfitPanel extends PluginPanel
         //PRINTOUT System.out.println("[SOT] [paintItems] Drawing panel — obtained items: "
         //PRINTOUT       + (tracker != null ? tracker.getObtainedItems().size() : "tracker null"));
 
+        iconBounds.clear();
+        hoverItemMap.clear();
+        outfitBounds.clear();
+
         int panelWidth = getWidth();
         int yOffset = config.panelTitleSpacer();
         FontMetrics fm = g.getFontMetrics();
@@ -183,7 +189,6 @@ public class SkillingOutfitPanel extends PluginPanel
 
             SkillingOutfitData.SkillingOutfitDataEntry entry = SkillingOutfitData.OUTFITS_DATA.get(outfitName);
             if (entry == null) continue;
-
             if (outfitName.equals("Farming - Farmer's Outfit Male") && isFemale) continue;
             if (outfitName.equals("Farming - Farmer's Outfit Female") && !isFemale) continue;
 
@@ -306,6 +311,7 @@ public class SkillingOutfitPanel extends PluginPanel
                 }
 
                 iconBounds.put(itemId, new Rectangle(x, y, config.iconSize(), config.iconSize()));
+                hoverItemMap.put(itemId, entryItem.getValue());
             }
         }
         yOffset += rows * (config.iconSize() + config.iconGapSpacing());
@@ -348,7 +354,7 @@ public class SkillingOutfitPanel extends PluginPanel
             case "Construction": return tracker.getCarpenterPoints() + "/" + totalRequired + " Carpenter Points Owned";
             case "Farming": return tracker.getFarmingPoints() + "/" + totalRequired + " Farming Points Owned";
             case "Smithing": return tracker.getFoundryReputation() + "/" + totalRequired + " Reputation Owned";
-            case "Firemaking": return tracker.getWintertodtCrates() + " Crates Opened";
+            case "Firemaking": return tracker.getWintertodtCrates() + " Wintertodt Subdued";
             case "Fishing": return tracker.getTemporossPoints() + " Tempoross Kills";
             case "Hunter": return tracker.getHunterRumors() + " Hunter Rumors Completed";
             case "Agility": return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
@@ -499,7 +505,7 @@ public class SkillingOutfitPanel extends PluginPanel
         }
 
         // add small bottom buffer
-        height += 20;
+        height += 40;
 
         return new Dimension(width, height);
     }
@@ -519,22 +525,37 @@ public class SkillingOutfitPanel extends PluginPanel
     private void drawItemHoverTooltip(Graphics2D g)
     {
         if (hoveredItemId == -1) return;
+
         Rectangle iconRect = iconBounds.get(hoveredItemId);
-        if (iconRect == null) return;
+        SkillingOutfitItem item = hoverItemMap.get(hoveredItemId);
+        if (iconRect == null || item == null) return;
 
-        SkillingOutfitItem item = null;
-        outer:
-        for (var entry : SkillingOutfitData.OUTFITS_DATA.values())
-            for (SkillingOutfitItem i : entry.items.values())
-                if (i.getItemId() == hoveredItemId) { item = i; break outer; }
+        List<String> tooltipLines = new ArrayList<>();
+        tooltipLines.add(item.getName());
 
-        if (item == null) return;
+        StringBuilder requirementLine = new StringBuilder();
+        int requirement = item.getRequirement();
+        String costText = item.getCostText();
 
-        drawTooltip(g, iconRect, List.of(
-                item.getName(),
-                item.getRequirement() + " " + item.getCostText(),
-                "Click To Open Wiki"
-        ));
+        if (requirement > 0)
+        {
+            requirementLine.append(requirement);
+        }
+
+        if (costText != null && !costText.isEmpty())
+        {
+            if (requirementLine.length() > 0) requirementLine.append(" ");
+            requirementLine.append(costText);
+        }
+
+        if (requirementLine.length() > 0)
+        {
+            tooltipLines.add(requirementLine.toString());
+        }
+
+        tooltipLines.add("Click To Open Wiki");
+
+        drawTooltip(g, iconRect, tooltipLines);
     }
 
     private void drawOutfitHoverTooltip(Graphics2D g)

@@ -250,7 +250,6 @@ public interface SkillingOutfitConfig extends Config
         return true;
     }
 
-
 // ----------------------- Skip to Outfits Display -------------------------------
 
     @ConfigSection(

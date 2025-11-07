@@ -330,27 +330,31 @@ public class SkillingOutfitPanel extends PluginPanel
 	{
 		if (!config.showTotalObtain()) return "";
 
-		int totalRequired = 0;
-		int costItemId = -1;
-		String costText = "";
-
-		for (SkillingOutfitItem item : items.values())
+		// ✅ Only hide the line if the WHOLE SET is obtained
+		boolean fullSetOwned = items.values().stream()
+				.allMatch(i -> isItemOwnedCached(i.getItemId()));
+		if (fullSetOwned)
 		{
-			if (!isItemOwnedCached(item.getItemId()))
-			{
-				totalRequired += item.getRequirement();
-				if (costItemId == -1)
-				{
-					costItemId = item.getCostItemId();
-					costText = item.getCostText();
-				}
-			}
+			return "";
 		}
 
-		if (totalRequired == 0)
-			return "";
+		int totalRequired = items.values().stream()
+				.filter(i -> !isItemOwnedCached(i.getItemId()))
+				.mapToInt(SkillingOutfitItem::getRequirement)
+				.sum();
 
-		int totalAvailable = (costItemId != -1) ? tracker.getTotalCostItem(costItemId) : 0;
+		int costItemId = items.values().stream()
+				.filter(i -> !isItemOwnedCached(i.getItemId()))
+				.mapToInt(SkillingOutfitItem::getCostItemId)
+				.findFirst().orElse(-1);
+		String costText = items.values().stream()
+				.filter(i -> !isItemOwnedCached(i.getItemId()))
+				.map(SkillingOutfitItem::getCostText)
+				.findFirst().orElse("");
+
+		int totalAvailable = (costItemId != -1)
+				? tracker.getTotalCostItem(costItemId)
+				: 0;
 
 		switch (entry.primarySkill)
 		{

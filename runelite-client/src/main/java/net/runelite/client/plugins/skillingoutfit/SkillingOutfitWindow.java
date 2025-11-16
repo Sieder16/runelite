@@ -35,11 +35,7 @@ public class SkillingOutfitWindow extends JFrame
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        // ---------------- Config Options ----------------
-        JCheckBox notifyOnNewBox = new JCheckBox("Notify on new item", config.notifyOnNew());
-        notifyOnNewBox.addActionListener(e -> setConfigValue("notifyOnNew", notifyOnNewBox.isSelected()));
-        content.add(notifyOnNewBox);
-
+        // ---------------- Config Options ---------------
         JLabel panelTitleLabel = new JLabel("Panel Title Spacer");
         JSpinner panelTitleSpinner = new JSpinner(new SpinnerNumberModel(config.panelTitleSpacer(), 0, 100, 1));
         panelTitleSpinner.addChangeListener(e -> setConfigValue("panelTitleSpacer", panelTitleSpinner.getValue()));

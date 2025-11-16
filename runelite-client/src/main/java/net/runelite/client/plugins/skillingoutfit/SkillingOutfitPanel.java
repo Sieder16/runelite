@@ -324,7 +324,6 @@ public class SkillingOutfitPanel extends PluginPanel
 		return yOffset;
 	}
 
-
 	// Updated buildPointsLine to only count remaining unowned items
 	private String buildPointsLine(SkillingOutfitData.SkillingOutfitDataEntry entry, Map<Integer, SkillingOutfitItem> items)
 	{
@@ -359,20 +358,17 @@ public class SkillingOutfitPanel extends PluginPanel
 		switch (entry.primarySkill)
 		{
 			case "Construction": return tracker.getCarpenterPoints() + "/" + totalRequired + " Carpenter Points Owned";
-			case "Farming": return tracker.getFarmingPoints() + "/" + totalRequired + " Farming Points Owned";
+			case "Farming": return tracker.getTitheFarmPoints() + "/" + totalRequired + " Farming Points Owned";
 			case "Smithing": return tracker.getFoundryReputation() + "/" + totalRequired + " Reputation Owned";
 			case "Firemaking": return tracker.getWintertodtCrates() + " Wintertodt Subdued";
 			case "Fishing": return tracker.getTemporossPoints() + " Tempoross Kills";
 			case "Hunter": return tracker.getHunterRumors() + " Hunter Rumors Completed";
 			case "Agility": return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
 			case "Woodcutting": return tracker.getAnimaBark() + "/" + totalRequired + " " + costText + " Owned";
+			case "Thieving": return tracker.getRoguesDenAttempts() + " Safes Opened";
 			default: return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
 		}
 	}
-
-
-
-
 
 	private int sumRequirements(Map<Integer, SkillingOutfitItem> items)
 	{
@@ -512,7 +508,7 @@ public class SkillingOutfitPanel extends PluginPanel
 		}
 
 		// add small bottom buffer
-		height += 40;
+		height += 80;
 
 		return new Dimension(width, height);
 	}

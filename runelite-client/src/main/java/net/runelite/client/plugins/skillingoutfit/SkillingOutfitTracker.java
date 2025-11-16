@@ -28,6 +28,7 @@ public class SkillingOutfitTracker
 	private int hunterRumors = 0;
 	private int wintertodtCrates = 0;
 	private int animaBark;
+	private int roguesDenAttempts = 0;
 
 	private final Map<Integer, Boolean> ownedCache = new HashMap<>();
 	private final Set<Integer> obtainedItems = new HashSet<>();
@@ -261,24 +262,34 @@ public class SkillingOutfitTracker
 		// Track owned items
 		for (int itemId : allTrackedItems)
 		{
-			boolean isOwned =
-					inventoryCacheSnapshot.getOrDefault(itemId, 0) > 0 ||
-							bankCacheSnapshot.getOrDefault(itemId, 0) > 0 ||
-							(equipmentContainer != null && Arrays.stream(equipmentContainer.getItems())
-									.anyMatch(i -> i != null && i.getId() == itemId));
+			boolean isInInventory = inventoryCacheSnapshot.getOrDefault(itemId, 0) > 0;
+			boolean isInBank = bankCacheSnapshot.getOrDefault(itemId, 0) > 0;
+			boolean isInEquipment = (equipmentContainer != null &&
+					Arrays.stream(equipmentContainer.getItems())
+							.anyMatch(i -> i != null && i.getId() == itemId));
 
+			boolean isOwned = isInInventory || isInBank || isInEquipment;
 			boolean wasOwnedBefore = ownedCache.getOrDefault(itemId, false);
 
 			ownedCache.put(itemId, isOwned);
 
-			// ✅ Only trigger notification if it's truly new — not just moved
+			// Only trigger notification if it's truly new — not being moved or loaded from equipment
 			if (isOwned && !obtainedItems.contains(itemId))
 			{
 				obtainedItems.add(itemId);
 
-				// Send chat only if it's *newly added* to obtainedItems, not from equip/unequip
+				// Only notify if:
+				// 1. It wasn't owned before
+				// 2. It's NOT equipment-only (inv/bank must contain it)
 				if (!wasOwnedBefore)
 				{
+					// ❌ Skip notification if the item is ONLY in equipment (login equip load)
+					if (isInEquipment && !isInInventory && !isInBank)
+					{
+						continue; // Skip this one entirely
+					}
+
+					// Find outfit + item name
 					String outfitName = null;
 					String itemName = null;
 
@@ -293,18 +304,6 @@ public class SkillingOutfitTracker
 							itemName = items.get(itemId).getName();
 							break;
 						}
-					}
-
-					if (client != null && outfitName != null && itemName != null && config.notifyOnNew())
-					{
-						final String chatOutfitName = outfitName;
-						final String chatItemName = itemName;
-						clientThread.invokeLater(() -> client.addChatMessage(
-								ChatMessageType.GAMEMESSAGE,
-								"",
-								"[SOT] <col=00ff00>You have obtained " + chatItemName + " from " + chatOutfitName + "</col>",
-								null
-						));
 					}
 				}
 			}
@@ -321,6 +320,7 @@ public class SkillingOutfitTracker
 			SwingUtilities.invokeLater(() -> panel.updateAllCaches());
 		}
 	}
+
 
 
 
@@ -382,6 +382,8 @@ public class SkillingOutfitTracker
 	}
 
 	public static final int FOUNDRY_REPUTATION = 3436;
-	public int foundryReputation = 0; // store the latest value
+	public int foundryReputation = 0;
+	public static final int FARMING_POINTS = 4893;
+	public int titheFarmPoints = 0;
 
 }

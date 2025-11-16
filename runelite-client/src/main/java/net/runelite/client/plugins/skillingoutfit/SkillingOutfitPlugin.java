@@ -49,7 +49,6 @@ public class SkillingOutfitPlugin extends Plugin
 	@Inject private EventBus eventBus;
 
 	private NavigationButton navButton;
-	private boolean notifyOnNew;
 	private SkillingOutfitWindow popoutWindow;
 	private SkillingOutfitPanel panel;
 	private final String configGroup = "skillingoutfit";
@@ -74,6 +73,9 @@ public class SkillingOutfitPlugin extends Plugin
 	private static final Pattern ANIMA_BARK_PATTERN = Pattern.compile(
 			"You've been awarded\\s*(?:<col=[0-9A-Fa-f]+>)?([\\d,]+)\\s*Anima-infused bark(?:</col>)?\\.?"
 	);
+	private static final Pattern ROGUES_DEN = Pattern.compile(
+			"You start cracking the safe\\."
+	);
 
 	// ===== Startup =====
 	@Override
@@ -93,8 +95,6 @@ public class SkillingOutfitPlugin extends Plugin
 				.build();
 
 		clientToolbar.addNavigation(navButton);
-
-		notifyOnNew = config.notifyOnNew();
 
 		clientThread.invokeLater(() -> {
 			// 1️⃣ Load previously obtained items
@@ -128,6 +128,7 @@ public class SkillingOutfitPlugin extends Plugin
 		loadMinigameStat("hunterRumors", tracker::setHunterRumors, 0);
 		loadMinigameStat("wintertodtCrates", tracker::setWintertodtCrates, 0);
 		loadMinigameStat("animaBark", tracker::setAnimaBark, 0);
+		loadMinigameStat("roguesDenAttempts", tracker::setRoguesDenAttempts, 0);
 
 		// Debug printouts for minigame stats
 		System.out.println("[SOT] [Startuppoints] mahoganyContracts: " + tracker.getCarpenterContracts());
@@ -138,11 +139,8 @@ public class SkillingOutfitPlugin extends Plugin
 		System.out.println("[SOT] [Startuppoints] hunterRumors: " + tracker.getHunterRumors());
 		System.out.println("[SOT] [Startuppoints] wintertodtCrates: " + tracker.getWintertodtCrates());
 		System.out.println("[SOT] [Startuppoints] animaBark: " + tracker.getAnimaBark());
+		System.out.println("[SOT] [Startuppoints] roguesDenAttempts: " + tracker.getRoguesDenAttempts());
 	}
-
-
-
-
 
 	// ===== Shutdown =====
 	@Override
@@ -205,6 +203,17 @@ public class SkillingOutfitPlugin extends Plugin
 			System.out.println("[SOT] Added " + bark + " Anima Bark To Total (New Total: " + newTotal + ")");
 		}, null)) return;
 
+		// Rogues' Den - Safe Attempts
+		Matcher rogue = ROGUES_DEN.matcher(message);
+		if (rogue.find())
+		{
+			int newValue = tracker.getRoguesDenAttempts() + 1;
+			tracker.setRoguesDenAttempts(newValue);
+			persistConfig("roguesDenAttempts", newValue);
+
+			safeUpdatePanel(panel::updateAllCaches);
+			return;
+		}
 	}
 
 	// ===== Item Container Changes =====
@@ -237,12 +246,22 @@ public class SkillingOutfitPlugin extends Plugin
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged event)
 	{
-		if (event.getVarpId() == tracker.FOUNDRY_REPUTATION)
+		int varbitId = event.getVarbitId();
+		int varpId = event.getVarpId();
+
+		// Foundry Rep — varp
+		if (varpId == tracker.FOUNDRY_REPUTATION)
 		{
-			clientThread.invoke(() -> {
-				tracker.foundryReputation = client.getVarpValue(tracker.FOUNDRY_REPUTATION);
-				System.out.println("[SOT] [VarPlayer] Foundry Rep: " + tracker.foundryReputation);
-			});
+			tracker.foundryReputation = client.getVarpValue(tracker.FOUNDRY_REPUTATION);
+			System.out.println("[SOT] [VarPlayer] Foundry Rep: " + tracker.foundryReputation);
+		}
+
+		// Tithe Farm Points — varbit
+		else if (varbitId == tracker.FARMING_POINTS)
+		{
+			int points = client.getVarbitValue(tracker.FARMING_POINTS);
+			tracker.titheFarmPoints = points;
+			System.out.println("[SOT] [Varbit] Tithe Farm Points: " + points);
 		}
 	}
 
@@ -289,10 +308,6 @@ public class SkillingOutfitPlugin extends Plugin
 						popoutWindow.dispose();
 						popoutWindow = null;
 					}
-					break;
-
-				case "notifyOnNew":
-					notifyOnNew = config.notifyOnNew();
 					break;
 
 				case "animaBark":

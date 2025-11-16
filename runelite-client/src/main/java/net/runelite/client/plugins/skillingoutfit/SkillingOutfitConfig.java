@@ -6,18 +6,6 @@ import java.awt.*;
 @ConfigGroup("skillingoutfit")
 public interface SkillingOutfitConfig extends Config
 {
-	// 1. Notify on new item
-	@ConfigItem(
-			keyName = "notifyOnNew",
-			name = "Notify on new item",
-			description = "Send a notification when a new skilling outfit piece is obtained",
-			position = 1
-	)
-	default boolean notifyOnNew()
-	{
-		return true;
-	}
-
 	// 2. Panel Title Spacer (formerly yOffset)
 	@ConfigItem(
 			keyName = "panelTitleSpacer",

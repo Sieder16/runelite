@@ -162,26 +162,26 @@ public class SkillingOutfitData
 				new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1200, 28134),
 				new SkillingOutfitItem.CostEntry("Yew Logs", 200, 1515),
 				new SkillingOutfitItem.CostEntry("Magic Logs", 100, 1513)
-		));
+		)); // Lumberjack Hat
 
 		EXTRA_COSTS.put(10939, List.of(
 				new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1500, 28134),
 				new SkillingOutfitItem.CostEntry("Yew Logs", 60, 1515),
 				new SkillingOutfitItem.CostEntry("Magic Logs", 120, 1513),
 				new SkillingOutfitItem.CostEntry("Redwood Logs", 120, 19669)
-		));
+		)); // Lumberjack Top
 
 		EXTRA_COSTS.put(10940, List.of(
 				new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1300, 28134),
 				new SkillingOutfitItem.CostEntry("Yew Logs", 160, 1515),
 				new SkillingOutfitItem.CostEntry("Magic Logs", 140, 1513)
-		));
+		)); // Lumberjack Legs
 
 		EXTRA_COSTS.put(10933, List.of(
 				new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1000, 28134),
 				new SkillingOutfitItem.CostEntry("Maple Logs", 100, 1517),
 				new SkillingOutfitItem.CostEntry("Yew Logs", 200, 1515)
-		));
+		)); // Lumberjack Boots
 	}
 
 }

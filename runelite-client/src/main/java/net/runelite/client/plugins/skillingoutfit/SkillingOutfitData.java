@@ -157,7 +157,7 @@ public class SkillingOutfitData
 	{
 		// -------------------------------
 		// Extra costs for Lumberjack Outfit
-		// -------------------------------
+		// ------------------------------- 
 		EXTRA_COSTS.put(10941, List.of(
 				new SkillingOutfitItem.CostEntry("Anima-Infused Bark", 1200, 28134),
 				new SkillingOutfitItem.CostEntry("Yew Logs", 200, 1515),

@@ -102,6 +102,7 @@ public class CustomXpGlobesPlugin extends Plugin
             case FIREMAKING: return config.firemakingPriority();
             case WOODCUTTING: return config.woodcuttingPriority();
             case FARMING: return config.farmingPriority();
+			case SAILING: return config.sailingPriority();
             default: return skill.ordinal(); // fallback
         }
     }
@@ -136,6 +137,7 @@ public class CustomXpGlobesPlugin extends Plugin
             case FIREMAKING: cfgMode = config.firemakingDisplay(); break;
             case WOODCUTTING: cfgMode = config.woodcuttingDisplay(); break;
             case FARMING: cfgMode = config.farmingDisplay(); break;
+			case SAILING: cfgMode = config.sailingDisplay(); break;
             default: cfgMode = CustomXpGlobesConfig.SkillDisplayMode.NORMAL; break;
         }
 

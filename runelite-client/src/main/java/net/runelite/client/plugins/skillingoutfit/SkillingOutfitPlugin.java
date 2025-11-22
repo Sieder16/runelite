@@ -129,17 +129,6 @@ public class SkillingOutfitPlugin extends Plugin
 		loadMinigameStat("wintertodtCrates", tracker::setWintertodtCrates, 0);
 		loadMinigameStat("animaBark", tracker::setAnimaBark, 0);
 		loadMinigameStat("roguesDenAttempts", tracker::setRoguesDenAttempts, 0);
-
-		// Debug printouts for minigame stats
-		System.out.println("[SOT] [Startuppoints] mahoganyContracts: " + tracker.getCarpenterContracts());
-		System.out.println("[SOT] [Startuppoints] mahoganyPoints: " + tracker.getCarpenterPoints());
-		System.out.println("[SOT] [Startuppoints] farmingPoints: " + tracker.getFarmingPoints());
-		System.out.println("[SOT] [Startuppoints] foundryPoints: " + tracker.getFoundryReputation());
-		System.out.println("[SOT] [Startuppoints] temporossPoints: " + tracker.getTemporossPoints());
-		System.out.println("[SOT] [Startuppoints] hunterRumors: " + tracker.getHunterRumors());
-		System.out.println("[SOT] [Startuppoints] wintertodtCrates: " + tracker.getWintertodtCrates());
-		System.out.println("[SOT] [Startuppoints] animaBark: " + tracker.getAnimaBark());
-		System.out.println("[SOT] [Startuppoints] roguesDenAttempts: " + tracker.getRoguesDenAttempts());
 	}
 
 	// ===== Shutdown =====
@@ -225,15 +214,12 @@ public class SkillingOutfitPlugin extends Plugin
 				|| id == InventoryID.EQUIPMENT.getId()
 				|| id == InventoryID.BANK.getId())
 		{
-			//PRINTOUT  System.out.println("[SOT] [onItemContainerChanged] ItemContainerChanged triggered for: " + id);
-
 			safeUpdatePanel(() -> {
 				panel.updateAllCaches();
 				tracker.updateOwnedItemsFromCaches();
 			});
 		}
 	}
-
 
 	// ===== Game Tick Updates =====
 	@Subscribe
@@ -253,7 +239,6 @@ public class SkillingOutfitPlugin extends Plugin
 		if (varpId == tracker.FOUNDRY_REPUTATION)
 		{
 			tracker.foundryReputation = client.getVarpValue(tracker.FOUNDRY_REPUTATION);
-			System.out.println("[SOT] [VarPlayer] Foundry Rep: " + tracker.foundryReputation);
 		}
 
 		// Tithe Farm Points — varbit
@@ -261,7 +246,6 @@ public class SkillingOutfitPlugin extends Plugin
 		{
 			int points = client.getVarbitValue(tracker.FARMING_POINTS);
 			tracker.titheFarmPoints = points;
-			System.out.println("[SOT] [Varbit] Tithe Farm Points: " + points);
 		}
 	}
 
@@ -285,7 +269,6 @@ public class SkillingOutfitPlugin extends Plugin
 				panel.updateAllCaches();  // updates snapshots and repaints innerPanel
 				panel.refresh();          // ensures outfit display map is up-to-date
 				tracker.foundryReputation = client.getVarpValue(tracker.FOUNDRY_REPUTATION);
-				System.out.println("[SOT] [GameState] Foundry Rep (login): " + tracker.foundryReputation);
 			});
 		}
 	}

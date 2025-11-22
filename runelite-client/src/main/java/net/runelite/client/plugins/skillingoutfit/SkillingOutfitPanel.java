@@ -60,7 +60,8 @@ public class SkillingOutfitPanel extends PluginPanel
 			Map.entry("Runecraft", new Color(0x996633)),
 			Map.entry("Smithing", new Color(0xCCCCCC)),
 			Map.entry("Thieving", new Color(0xFFFF00)),
-			Map.entry("Woodcutting", new Color(0x996633))
+			Map.entry("Woodcutting", new Color(0x996633)),
+			Map.entry("Sailing", new Color(0x1EB4C7))
 	);
 
 	public SkillingOutfitPanel(Client client, ItemManager itemManager, SkillingOutfitTracker tracker,
@@ -73,7 +74,7 @@ public class SkillingOutfitPanel extends PluginPanel
 		this.config = config;
 		this.configManager = configManager;
 		this.plugin = plugin;
-		this.clientThread = clientThread; // now works correctly
+		this.clientThread = clientThread;
 
 		setBackground(new Color(40, 40, 40));
 		setLayout(new BorderLayout());
@@ -159,10 +160,6 @@ public class SkillingOutfitPanel extends PluginPanel
 
 	private void paintItems(Graphics2D g)
 	{
-		// Debug print to verify how many obtained items we have when painting
-		//PRINTOUT System.out.println("[SOT] [paintItems] Drawing panel — obtained items: "
-		//PRINTOUT       + (tracker != null ? tracker.getObtainedItems().size() : "tracker null"));
-
 		iconBounds.clear();
 		hoverItemMap.clear();
 		outfitBounds.clear();
@@ -240,7 +237,7 @@ public class SkillingOutfitPanel extends PluginPanel
 		// Outfit title
 		// ----------------------------
 		yOffset += config.firstOutfitSpacer();
-		// ✅ Determine outfit color (respecting override config)
+		// Determine outfit color (respecting override config)
 		Color outfitColor;
 		if (config.overrideOutfitColors())                   // Use the user's custom override color
 		{
@@ -329,7 +326,7 @@ public class SkillingOutfitPanel extends PluginPanel
 	{
 		if (!config.showTotalObtain()) return "";
 
-		// ✅ Only hide the line if the WHOLE SET is obtained
+		// Only hide the line if the WHOLE SET is obtained
 		boolean fullSetOwned = items.values().stream()
 				.allMatch(i -> isItemOwnedCached(i.getItemId()));
 		if (fullSetOwned)
@@ -363,6 +360,7 @@ public class SkillingOutfitPanel extends PluginPanel
 			case "Firemaking": return tracker.getWintertodtCrates() + " Wintertodt Subdued";
 			case "Fishing": return tracker.getTemporossPoints() + " Tempoross Kills";
 			case "Hunter": return tracker.getHunterRumors() + " Hunter Rumors Completed";
+			case "Prayer": return "Shade Catacombs - Gold Chest";
 			case "Agility": return totalAvailable + "/" + totalRequired + " " + costText + " Owned";
 			case "Woodcutting": return tracker.getAnimaBark() + "/" + totalRequired + " " + costText + " Owned";
 			case "Thieving": return tracker.getRoguesDenAttempts() + " Safes Opened";

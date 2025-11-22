@@ -107,7 +107,7 @@ public class SkillingOutfitData
 		Map<Integer, SkillingOutfitItem> smithing = new LinkedHashMap<>();
 		smithing.put(27023, new SkillingOutfitItem(27023, "Smiths Tunic", 4000, "Foundry Reputation", 0));
 		smithing.put(27025, new SkillingOutfitItem(27025, "Smiths Trousers", 4000, "Foundry Reputation", 0));
-		smithing.put(27029, new SkillingOutfitItem(27029, "Smiths Gloves", 3500, "Foundry Reputation", 0));
+		smithing.put(27029, new SkillingOutfitItem(27029, "Smiths Gloves", 3500, "Foundry Reputation", 0, List.of(27031)));
 		smithing.put(27027, new SkillingOutfitItem(27027, "Smiths Boots", 3500, "Foundry Reputation", 0));
 		OUTFITS_DATA.put("Smithing - Smith's Uniform",
 				new SkillingOutfitDataEntry("displaySmithing", smithing, "https://oldschool.runescape.wiki/w/Smiths'_Uniform", "Smithing"));

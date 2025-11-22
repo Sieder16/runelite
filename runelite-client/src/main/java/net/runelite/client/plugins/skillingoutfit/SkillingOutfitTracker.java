@@ -90,7 +90,6 @@ public class SkillingOutfitTracker
 			}
 			// Update snapshot for safe panel/thread reading
 			inventoryCacheSnapshot = new HashMap<>(inventoryCostCache);
-
 		});
 	}
 
@@ -140,8 +139,6 @@ public class SkillingOutfitTracker
 			sb.setLength(sb.length() - 1); // remove trailing comma
 
 		configManager.setConfiguration(configGroup, "bankCache", sb.toString());
-
-		System.out.println("[SOT] Saved bank cache: " + sb.toString());
 	}
 
 	public void loadBankCache()
@@ -166,7 +163,6 @@ public class SkillingOutfitTracker
 		}
 
 		bankCacheSnapshot = loaded;
-		System.out.println("[SOT] Loaded bank cache: " + loaded);
 	}
 
 	// ======== TOTAL COST ITEMS COMBINED ========
@@ -212,7 +208,6 @@ public class SkillingOutfitTracker
 			sb.setLength(sb.length() - 1);
 
 		configManager.setConfiguration(configGroup, "obtainedItems", sb.toString());
-		//PRINTOUT   System.out.println("[SOT] [saveObtainedItems] Saved obtained items to config: " + sb.toString());
 	}
 
 	public void loadObtainedItems()
@@ -226,15 +221,10 @@ public class SkillingOutfitTracker
 				{
 					int itemId = Integer.parseInt(s);
 					obtainedItems.add(itemId);
-					//PRINTOUT  System.out.println("[SOT] [loadObtainedItems] Loaded obtained item from config: " + itemId);
 				}
 				catch (NumberFormatException ignored) {}
 			}
 		}
-		//PRINTOUT else
-		//PRINTOUT{
-			//PRINTOUT     System.out.println("[SOT] [loadObtainedItems] No obtained items found in config");
-			//PRINTOUT }
 	}
 
 	public void updateOwnedItemsFromCaches()
@@ -278,12 +268,9 @@ public class SkillingOutfitTracker
 			{
 				obtainedItems.add(itemId);
 
-				// Only notify if:
-				// 1. It wasn't owned before
-				// 2. It's NOT equipment-only (inv/bank must contain it)
 				if (!wasOwnedBefore)
 				{
-					// ❌ Skip notification if the item is ONLY in equipment (login equip load)
+					// Skip notification if the item is ONLY in equipment (login equip load)
 					if (isInEquipment && !isInInventory && !isInBank)
 					{
 						continue; // Skip this one entirely
@@ -322,8 +309,6 @@ public class SkillingOutfitTracker
 	}
 
 
-
-
 	public void markObtainedFromConfig()
 	{
 		// Load items saved in config
@@ -334,9 +319,6 @@ public class SkillingOutfitTracker
 		{
 			ownedCache.put(itemId, true);
 		}
-
-		// Debug: print all obtained items marked from config
-		//PRINTOUT System.out.println("[SOT] [markObtainedFromConfig] Marking obtained items from config: " + obtainedItems);
 	}
 
 
@@ -372,11 +354,6 @@ public class SkillingOutfitTracker
 				int costId = item.getCostItemId();
 				int total = getTotalCostItem(costId); // inventory+equipment+bank
 				costItemCache.put(costId, total);
-
-				// Debug print
-			   // System.out.println("[SOT] [refreshCostItemCache] Loading cost item: ID=" + costId
-			   //         + ", Name=" + item.getCostText()
-			   //         + ", Total Owned=" + total);
 			}
 		}
 	}
